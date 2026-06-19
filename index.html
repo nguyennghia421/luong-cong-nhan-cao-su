@@ -80,10 +80,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-hei
    PAGE 1 — TỔNG QUAN (light green theme như CSVC)
 ══════════════════════════════════════════════ */
 #pg1{background:var(--bg);color:var(--t1);padding:0}
-.ov-wrap{padding:20px 28px 40px;max-width:1600px;background:var(--bg)}
+.ov-wrap{padding:20px 28px 40px;max-width:1600px;margin:0 auto;background:var(--bg)}
 
 /* Filter bar overview */
 .ov-fbar{background:var(--card);border-bottom:1px solid var(--brd);padding:10px 28px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.ov-fbar-inner{display:flex;gap:12px;align-items:center;flex-wrap:wrap;max-width:1600px;margin:0 auto;width:100%}
 .ov-flabel{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
 .ov-fsel{font-size:12px;font-weight:500;border:1px solid var(--brd);border-radius:7px;padding:6px 11px;color:var(--t1);background:var(--bg);font-family:'Inter',sans-serif;cursor:pointer;outline:none}
 .ov-fsel:hover,.ov-fsel:focus{border-color:var(--grn)}
@@ -338,6 +339,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-hei
 ════════════════════════════════════════════════════════ -->
 <div class="tab-panel active" id="pg1">
   <div class="ov-fbar">
+    <div class="ov-fbar-inner">
     <span class="ov-flabel">Khu vực KT:</span>
     <select class="ov-fsel" id="ov-selKV" onchange="ovRender()"><option value="all">Tất cả (19 KV)</option></select>
     <div class="ov-fdiv"></div>
@@ -356,6 +358,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-hei
     </select>
     <div class="ov-fdiv"></div>
     <span id="ov-badge" style="font-size:10px;color:var(--grn);font-weight:600;font-family:'IBM Plex Mono',monospace"></span>
+    </div>
   </div>
   <div class="ov-wrap">
     <div class="ov-kpi-row">
