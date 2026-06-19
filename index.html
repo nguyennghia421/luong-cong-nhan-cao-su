@@ -137,9 +137,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-hei
 .rrow-l{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--brd)}
 .rrow-l:last-child{border-bottom:none}
 .rlbl-l{width:26px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700}
-.rtrack-l{flex:1;height:18px;background:var(--hover);border-radius:4px;overflow:hidden}
-.rbar-l{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:7px;font-size:9px;font-weight:600;transition:width .4s}
-.rcnt-l{font-size:11px;width:22px;text-align:right}
+.rtrack-l{flex:1;height:26px;background:rgba(255,255,255,.05);border-radius:6px;overflow:hidden}
+.rbar-l{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:10px;font-size:10px;font-weight:700;transition:width .4s}
+.rcnt-l{font-size:12px;font-weight:700;width:26px;text-align:right}
 
 /* ══════════════════════════════════════════════
    PAGE 2 — KHAI THÁC MỦ (dark)
@@ -188,9 +188,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-hei
 .rrow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--brd)}
 .rrow:last-child{border-bottom:none}
 .rlbl{width:26px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700}
-.rtrack{flex:1;height:18px;background:var(--bg);border-radius:4px;overflow:hidden}
-.rbar{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:7px;font-size:9px;font-weight:600;transition:width .4s ease}
-.rcnt{font-size:11px;width:22px;text-align:right}
+.rtrack{flex:1;height:26px;background:rgba(255,255,255,.05);border-radius:6px;overflow:hidden}
+.rbar{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:10px;font-size:10px;font-weight:700;transition:width .4s ease}
+.rcnt{font-size:12px;font-weight:700;width:26px;text-align:right}
 
 /* hs bar */
 .hb{display:flex;align-items:center;gap:6px}
@@ -812,7 +812,7 @@ function ktRender(){
   document.getElementById('kt-rankDist').innerHTML=ro.map(r=>`
     <div class="rrow">
       <div class="rlbl" style="color:${RKC[r]}">${r}</div>
-      <div class="rtrack"><div class="rbar" style="width:${rc[r]/mx*100}%;background:${RKC[r]}25;color:${RKC[r]}">${rc[r]>0?rc[r]+' CN':''}</div></div>
+      <div class="rtrack"><div class="rbar" style="width:${rc[r]/mx*100}%;background:${RKC[r]}bf;color:#fff">${rc[r]>0?rc[r]+' CN':''}</div></div>
       <div class="rcnt" style="color:${RKC[r]}">${rc[r]}</div>
     </div>`).join('');
 
@@ -1303,7 +1303,7 @@ function ovRender(){
   document.getElementById('ov-rank-bars').innerHTML=ro.map(r=>`
     <div class="rrow-l">
       <div class="rlbl-l" style="color:${RKC_L[r]}">${r}</div>
-      <div class="rtrack-l"><div class="rbar-l" style="width:${rc[r]/mx*100}%;background:${RKC_L[r]}22;color:${RKC_L[r]}">${rc[r]>0?rc[r]+' CN':''}</div></div>
+      <div class="rtrack-l"><div class="rbar-l" style="width:${rc[r]/mx*100}%;background:${RKC_L[r]}bf;color:#fff">${rc[r]>0?rc[r]+' CN':''}</div></div>
       <div class="rcnt-l" style="color:${RKC_L[r]}">${rc[r]}</div>
     </div>`).join('');
 }
