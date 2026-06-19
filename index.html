@@ -232,12 +232,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-hei
    PAGE 3 — CSVC (light theme)
 ══════════════════════════════════════════════ */
 #pg3{background:var(--bg);color:var(--t1);padding:0}
-.cs-fstrip{background:var(--card);border-bottom:1px solid var(--brd);padding:9px 24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cs-fstrip{background:var(--card);border-bottom:1px solid var(--brd);padding:9px 24px}
+.cs-fstrip-inner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:1400px;margin:0 auto;width:100%}
 .cs-flbl{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
 .cs-fsel{font-size:12px;font-weight:500;border:1px solid var(--brd);border-radius:7px;padding:5px 10px;color:var(--t1);background:var(--bg);font-family:'Inter',sans-serif;cursor:pointer;outline:none}
 .cs-fsel:hover,.cs-fsel:focus{border-color:var(--grn)}
 .cs-fdiv{width:1px;height:22px;background:var(--brd);flex-shrink:0}
-.cs-main{padding:18px 24px 40px;max-width:1400px;background:var(--bg)}
+.cs-main{padding:18px 24px 40px;max-width:1400px;margin:0 auto;background:var(--bg)}
 
 /* shared cards CSVC */
 .c-sh{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.1px;color:var(--grn);padding:0 0 8px;border-bottom:1px solid var(--brd);margin-bottom:12px;display:flex;align-items:center;gap:8px}
@@ -532,6 +533,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-hei
 <div class="tab-panel" id="pg3">
   <!-- Filter strip CSVC -->
   <div class="cs-fstrip">
+    <div class="cs-fstrip-inner">
     <span class="cs-flbl">Đội:</span>
     <select class="cs-fsel" id="f-doi" onchange="csApplyFilter()">
       <option value="all">Tất cả</option>
@@ -555,6 +557,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-hei
     </select>
     <button onclick="csReset()" style="font-size:11px;padding:4px 11px;border:1px solid var(--brd);border-radius:7px;background:var(--hover);cursor:pointer;color:var(--t2);font-family:'Inter',sans-serif">↺ Reset</button>
     <span id="cs-badge" style="margin-left:auto;font-size:11px;color:var(--t2)"></span>
+    </div>
   </div>
 
   <div class="cs-main">
