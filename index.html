@@ -763,10 +763,10 @@ function ktRender(){
   const totSL400=data.reduce((s,d)=>s+d.sl400,0);
   const totKT2=Math.max(0,data.reduce((s,d)=>s+ktOf(d),0));
   const tot=totCC2+totSL240+totSL400+totKT2||1;
-  ktCharts.cDonut=new Chart(document.getElementById('kt-cDonut'),{type:'doughnut',
+  ktCharts.cDonut=new Chart(document.getElementById('kt-cDonut'),{type:'pie',
     data:{labels:['Chuyên cần','SL mủ 240r','SL mủ 400r','Kỹ thuật'],
       datasets:[{data:[totCC2,totSL240,totSL400,totKT2],backgroundColor:['rgba(88,166,255,.8)','rgba(63,185,80,.8)','rgba(82,230,160,.85)','rgba(188,140,255,.8)'],borderColor:'#FFFFFF',borderWidth:3,hoverOffset:8}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
+    options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmtK(c.raw)} Riel (${pct(c.raw/tot)})`}}}}
   });
   document.getElementById('kt-donutLeg').innerHTML=`
