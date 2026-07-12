@@ -12,10 +12,10 @@
    SHARED DESIGN TOKENS
 ═══════════════════════════════════════════════════ */
 :root{
-  /* dark base (page 2 – khai thác) */
-  --bg:#0d1117; --card:#161b22; --hover:#1e2530; --brd:#30363d;
+  /* light base — shared across all dashboard pages */
+  --bg:#F4F6F3; --card:#FFFFFF; --hover:#F3F4F6; --brd:#D1D5DB;
   --acc:#58a6ff; --grn:#3fb950; --ylw:#d29922; --red2:#f85149; --pur:#bc8cff; --org:#e3993e;
-  --t1:#e6edf3; --t2:#8b949e; --t3:#484f58;
+  --t1:#111827; --t2:#4B5563; --t3:#6B7280;
   /* light base (page 3 – CSVC) */
   --g1:#0F3D2E; --g2:#1A5C42; --g3:#2D8A62; --g4:#52B788; --g5:#B7E4C7; --g6:#EAFAF1;
   --amber:#D4870A; --amber-l:#FEF3DC; --red:#B91C1C; --red-l:#FEE2E2;
@@ -37,7 +37,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-hei
   padding:14px 28px;
   display:flex; align-items:center; justify-content:space-between;
   position:sticky; top:0; z-index:300;
-  box-shadow:0 2px 20px rgba(0,0,0,.4);
+  box-shadow:0 2px 12px rgba(15,61,46,.18);
 }
 .g-hdr-l{display:flex;align-items:center;gap:14px}
 .g-logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--grn),var(--acc));display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
@@ -49,8 +49,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-hei
    TAB NAV
 ═══════════════════════════════ */
 .tab-nav{
-  background:#0d1e14;
-  border-bottom:1px solid rgba(82,183,136,.2);
+  background:#FFFFFF;
+  border-bottom:1px solid var(--brd);
   padding:0 28px;
   display:flex; gap:0;
   position:sticky; top:71px; z-index:200;
@@ -66,8 +66,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-hei
   display:flex; align-items:center; gap:7px;
   white-space:nowrap;
 }
-.tab-btn:hover{color:var(--t1); background:rgba(88,166,255,.05)}
-.tab-btn.active{color:#e6edf3; border-bottom-color:var(--grn); background:rgba(63,185,80,.06)}
+.tab-btn:hover{color:var(--g1); background:var(--g6)}
+.tab-btn.active{color:var(--g1); border-bottom-color:var(--g3); background:var(--g6)}
 .tab-icon{font-size:14px}
 
 /* ═══════════════════════════════
@@ -137,7 +137,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-hei
 .rrow-l{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--brd)}
 .rrow-l:last-child{border-bottom:none}
 .rlbl-l{width:26px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700}
-.rtrack-l{flex:1;height:26px;background:rgba(255,255,255,.05);border-radius:6px;overflow:hidden}
+.rtrack-l{flex:1;height:26px;background:var(--hover);border-radius:6px;overflow:hidden}
 .rbar-l{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:10px;font-size:10px;font-weight:700;transition:width .4s}
 .rcnt-l{font-size:12px;font-weight:700;width:26px;text-align:right}
 
@@ -188,7 +188,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-hei
 .rrow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--brd)}
 .rrow:last-child{border-bottom:none}
 .rlbl{width:26px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700}
-.rtrack{flex:1;height:26px;background:rgba(255,255,255,.05);border-radius:6px;overflow:hidden}
+.rtrack{flex:1;height:26px;background:var(--hover);border-radius:6px;overflow:hidden}
 .rbar{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:10px;font-size:10px;font-weight:700;transition:width .4s ease}
 .rcnt{font-size:12px;font-weight:700;width:26px;text-align:right}
 
@@ -281,7 +281,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-hei
 .c-table{width:100%;border-collapse:collapse;font-size:11px}
 .c-table thead th{position:sticky;top:0;z-index:2;background:var(--g1);color:#fff;padding:8px 10px;font-weight:600;font-size:9px;white-space:nowrap;text-align:left}
 .c-table thead th.r{text-align:right}
-.c-table tbody tr:nth-child(even){background:rgba(255,255,255,.02)}
+.c-table tbody tr:nth-child(even){background:rgba(15,61,46,.025)}
 .c-table tbody tr:hover{background:var(--hover)}
 .c-table tbody td{padding:7px 10px;color:var(--t2);border-bottom:1px solid var(--brd);vertical-align:middle}
 .c-tr{text-align:right;font-family:'IBM Plex Mono',monospace}
@@ -750,8 +750,8 @@ function ktRender(){
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmtR(c.raw)} Riel`}}},
       scales:{
-        x:{stacked:true,ticks:{color:'#8b949e',font:{size:8},maxRotation:45},grid:{color:'#21262d'}},
-        y:{stacked:true,ticks:{color:'#8b949e',font:{size:9},callback:v=>(v/1000).toFixed(0)+'K'},grid:{color:'#21262d'}}
+        x:{stacked:true,ticks:{color:'#8b949e',font:{size:8},maxRotation:45},grid:{color:'#E5E7EB'}},
+        y:{stacked:true,ticks:{color:'#8b949e',font:{size:9},callback:v=>(v/1000).toFixed(0)+'K'},grid:{color:'#E5E7EB'}}
       }
     }
   });
@@ -795,8 +795,8 @@ function ktRender(){
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:true,labels:{color:'#8b949e',font:{size:9},boxWidth:10}}},
       scales:{
-        x:{stacked:true,ticks:{color:'#8b949e',font:{size:9}},grid:{color:'#21262d'}},
-        y:{stacked:true,ticks:{color:'#8b949e',font:{size:9},callback:v=>(v/1000).toFixed(0)+'K'},grid:{color:'#21262d'}}
+        x:{stacked:true,ticks:{color:'#8b949e',font:{size:9}},grid:{color:'#E5E7EB'}},
+        y:{stacked:true,ticks:{color:'#8b949e',font:{size:9},callback:v=>(v/1000).toFixed(0)+'K'},grid:{color:'#E5E7EB'}}
       }
     }
   });
@@ -820,8 +820,8 @@ function ktRender(){
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:p=>{const d=p.raw;return[`${d.name} (Hạng ${d.hang})`,`SL mủ 400r: ${fmtK(d.x)} Riel`,`SL mủ 240r: ${fmtK(d.sl240)} Riel`,`Tổng lương: ${fmtK(d.tong)} Riel`]}}}},
       scales:{
-        x:{title:{display:true,text:'SL mủ 400r (Riel)',color:'#8b949e',font:{size:9}},ticks:{color:'#8b949e',font:{size:8},callback:v=>(v/1000).toFixed(0)+'K'},grid:{color:'#21262d'}},
-        y:{title:{display:true,text:'Tổng lương (Riel)',color:'#8b949e',font:{size:9}},ticks:{color:'#8b949e',font:{size:8},callback:v=>(v/1000).toFixed(0)+'K'},grid:{color:'#21262d'}}
+        x:{title:{display:true,text:'SL mủ 400r (Riel)',color:'#8b949e',font:{size:9}},ticks:{color:'#8b949e',font:{size:8},callback:v=>(v/1000).toFixed(0)+'K'},grid:{color:'#E5E7EB'}},
+        y:{title:{display:true,text:'Tổng lương (Riel)',color:'#8b949e',font:{size:9}},ticks:{color:'#8b949e',font:{size:8},callback:v=>(v/1000).toFixed(0)+'K'},grid:{color:'#E5E7EB'}}
       }
     }
   });
@@ -834,8 +834,8 @@ function ktRender(){
     options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${fmtR(c.raw)} Riel · Hạng ${td[c.dataIndex].hang}`}}},
       scales:{
-        x:{ticks:{color:'#8b949e',font:{size:8},callback:v=>(v/1000).toFixed(0)+'K'},grid:{color:'#21262d'}},
-        y:{ticks:{color:'#8b949e',font:{size:8}},grid:{color:'#21262d'}}
+        x:{ticks:{color:'#8b949e',font:{size:8},callback:v=>(v/1000).toFixed(0)+'K'},grid:{color:'#E5E7EB'}},
+        y:{ticks:{color:'#8b949e',font:{size:8}},grid:{color:'#E5E7EB'}}
       }
     }
   });
@@ -873,7 +873,7 @@ function ktRender(){
 function ktInit(){
   ['kt-selKT','kt-selNhom'].forEach(id=>document.getElementById(id).addEventListener('change',ktRender));
   document.getElementById('kt-selSearch').addEventListener('input',ktRender);
-  Chart.defaults.color='#8b949e'; Chart.defaults.font.family="'Inter',sans-serif";
+  Chart.defaults.color='#6B7280'; Chart.defaults.font.family="'Inter',sans-serif";
   ktRender();
 }
 
@@ -1117,7 +1117,7 @@ function csRenderChartsDoi(data){
     data:{labels:['Tổng công','Tổng lương','Số CN','Đầu việc'],
       datasets:dois.map((d,i)=>({label:'Đội '+d,data:[cong[i]/maxC*100,luong[i]/maxL*100,cnCnt[i]/mxCN*100,dvCnt[i]/mxDV*100].map(v=>+v.toFixed(1)),backgroundColor:COLS[i]+'25',borderColor:COLS[i],borderWidth:2,pointRadius:3,pointBackgroundColor:COLS[i]}))},
     options:{responsive:true,maintainAspectRatio:true,aspectRatio:1,
-      scales:{r:{min:0,max:100,ticks:{stepSize:25,font:{size:7},backdropColor:'transparent',color:var2ink3},pointLabels:{font:{size:9},color:var2ink3},grid:{color:'#21262d'},angleLines:{color:'#30363d'}}},
+      scales:{r:{min:0,max:100,ticks:{stepSize:25,font:{size:7},backdropColor:'transparent',color:var2ink3},pointLabels:{font:{size:9},color:var2ink3},grid:{color:'#E5E7EB'},angleLines:{color:'#30363d'}}},
       plugins:{legend:{display:false}}}
   });
 }
@@ -1241,8 +1241,8 @@ function ovRender(){
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw} M Riel`}}},
       scales:{
-        x:{ticks:{color:var2ink3,font:{size:10}},grid:{color:'#21262d'}},
-        y:{ticks:{color:var2ink3,font:{size:9},callback:v=>v+' M'},grid:{color:'#21262d'}}
+        x:{ticks:{color:var2ink3,font:{size:10}},grid:{color:'#E5E7EB'}},
+        y:{ticks:{color:var2ink3,font:{size:9},callback:v=>v+' M'},grid:{color:'#E5E7EB'}}
       }
     }
   });
@@ -1262,8 +1262,8 @@ function ovRender(){
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{labels:{color:var2ink3,font:{size:9},boxWidth:10}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw} M Riel`}}},
       scales:{
-        x:{ticks:{color:var2ink3,font:{size:10}},grid:{color:'#21262d'}},
-        y:{ticks:{color:var2ink3,font:{size:9},callback:v=>v+'M'},grid:{color:'#21262d'}}
+        x:{ticks:{color:var2ink3,font:{size:10}},grid:{color:'#E5E7EB'}},
+        y:{ticks:{color:var2ink3,font:{size:9},callback:v=>v+'M'},grid:{color:'#E5E7EB'}}
       }
     }
   });
@@ -1294,12 +1294,12 @@ function ovRender(){
       <div class="rcnt-l" style="color:${RKC_L[r]}">${rc[r]}</div>
     </div>`).join('');
 }
-const var2ink3='#8b949e';
+const var2ink3='#6B7280';
 
 // ═══════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════
-Chart.defaults.color='#8b949e';
+Chart.defaults.color='#6B7280';
 Chart.defaults.font.family="'Inter',sans-serif";
 // Render trang 1 ngay khi load
 ovRender(); ovRendered=true;
