@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Dashboard Lương CN — Tập đoàn Cao Su</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ═══════════════════════════════════════════════════
+   SHARED DESIGN TOKENS
+═══════════════════════════════════════════════════ */
+:root{
+  /* dark base (page 2 – khai thác) */
+  --bg:#0d1117; --card:#161b22; --hover:#1e2530; --brd:#30363d;
+  --acc:#58a6ff; --grn:#3fb950; --ylw:#d29922; --red2:#f85149; --pur:#bc8cff; --org:#e3993e;
+  --t1:#e6edf3; --t2:#8b949e; --t3:#484f58;
+  /* light base (page 3 – CSVC) */
+  --g1:#0F3D2E; --g2:#1A5C42; --g3:#2D8A62; --g4:#52B788; --g5:#B7E4C7; --g6:#EAFAF1;
+  --amber:#D4870A; --amber-l:#FEF3DC; --red:#B91C1C; --red-l:#FEE2E2;
+  --blue:#1D4ED8; --blue-l:#EFF6FF;
+  --ink:#111827; --ink2:#374151; --ink3:#6B7280; --ink4:#9CA3AF;
+  --white:#fff; --canvas:#F4F6F3; --border:#E5E7EB;
+  --sh:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --radius:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh}
+
+/* ═══════════════════════════════
+   GLOBAL HEADER
+═══════════════════════════════ */
+.g-hdr{
+  background:linear-gradient(135deg,#0d2a1a,#0F3D2E 55%,#1A5C42);
+  border-bottom:1px solid rgba(82,183,136,.25);
+  padding:14px 28px;
+  display:flex; align-items:center; justify-content:space-between;
+  position:sticky; top:0; z-index:300;
+  box-shadow:0 2px 20px rgba(0,0,0,.4);
+}
+.g-hdr-l{display:flex;align-items:center;gap:14px}
+.g-logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--grn),var(--acc));display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.g-title{font-size:15px;font-weight:800;color:#e6edf3}
+.g-sub{font-size:11px;color:var(--g5);margin-top:2px}
+.g-badge{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--g5);background:rgba(82,183,136,.12);border:1px solid rgba(82,183,136,.3);padding:5px 13px;border-radius:20px}
+
+/* ═══════════════════════════════
+   TAB NAV
+═══════════════════════════════ */
+.tab-nav{
+  background:#0d1e14;
+  border-bottom:1px solid rgba(82,183,136,.2);
+  padding:0 28px;
+  display:flex; gap:0;
+  position:sticky; top:71px; z-index:200;
+}
+.tab-btn{
+  padding:13px 22px;
+  font-size:12px; font-weight:600;
+  color:var(--t2);
+  border:none; background:none; cursor:pointer;
+  border-bottom:2px solid transparent;
+  transition:all .18s;
+  font-family:'Inter',sans-serif;
+  display:flex; align-items:center; gap:7px;
+  white-space:nowrap;
+}
+.tab-btn:hover{color:var(--t1); background:rgba(88,166,255,.05)}
+.tab-btn.active{color:#e6edf3; border-bottom-color:var(--grn); background:rgba(63,185,80,.06)}
+.tab-icon{font-size:14px}
+
+/* ═══════════════════════════════
+   PAGE PANELS
+═══════════════════════════════ */
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ══════════════════════════════════════════════
+   PAGE 1 — TỔNG QUAN (light green theme như CSVC)
+══════════════════════════════════════════════ */
+#pg1{background:var(--bg);color:var(--t1);padding:0}
+.ov-wrap{padding:20px 28px 40px;max-width:1600px;margin:0 auto;background:var(--bg)}
+
+/* Filter bar overview */
+.ov-fbar{background:var(--card);border-bottom:1px solid var(--brd);padding:10px 28px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.ov-fbar-inner{display:flex;gap:12px;align-items:center;flex-wrap:wrap;max-width:1600px;margin:0 auto;width:100%}
+.ov-flabel{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+.ov-fsel{font-size:12px;font-weight:500;border:1px solid var(--brd);border-radius:7px;padding:6px 11px;color:var(--t1);background:var(--bg);font-family:'Inter',sans-serif;cursor:pointer;outline:none}
+.ov-fsel:hover,.ov-fsel:focus{border-color:var(--grn)}
+.ov-fdiv{width:1px;height:22px;background:var(--brd);flex-shrink:0}
+
+/* KPI strip overview — light */
+.ov-kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:18px}
+.ov-kpi{background:var(--card);border:1px solid var(--brd);border-radius:11px;padding:14px 16px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .15s,transform .12s}
+.ov-kpi:hover{border-color:var(--grn);transform:translateY(-1px)}
+.ov-kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.ov-kpi.k1::after{background:linear-gradient(90deg,#1D4ED8,#3B82F6)}
+.ov-kpi.k2::after{background:linear-gradient(90deg,#0F3D2E,#2D8A62)}
+.ov-kpi.k3::after{background:linear-gradient(90deg,#D4870A,#F6C84A)}
+.ov-kpi.k4::after{background:linear-gradient(90deg,#2D8A62,#52B788)}
+.ov-kpi.k5::after{background:linear-gradient(90deg,#B91C1C,#F87171)}
+.ov-kpi.k6::after{background:linear-gradient(90deg,#7C3AED,#A78BFA)}
+.ok-lb{font-size:9px;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;font-weight:700;margin-bottom:6px}
+.ok-v{font-size:20px;font-weight:800;font-family:'IBM Plex Mono',monospace;line-height:1}
+.ok-sub{font-size:9px;color:var(--t3);margin-top:4px}
+
+/* Cards overview */
+.ov-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.ov-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.ov-card{background:var(--card);border:1px solid var(--brd);border-radius:12px;overflow:hidden}
+.ov-ch{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.ov-ct{font-size:12px;font-weight:700;color:var(--t1);display:flex;align-items:center;gap:8px}
+.ov-dot{width:7px;height:7px;border-radius:50%}
+.ov-tag{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--t2);background:var(--bg);border:1px solid var(--brd);border-radius:4px;padding:2px 7px}
+.ov-cb{padding:14px 16px}
+.ov-sh{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.1px;color:var(--grn);padding:0 0 8px;border-bottom:1px solid var(--brd);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.ov-sh::before{content:'';width:4px;height:13px;background:var(--grn);border-radius:2px;flex-shrink:0}
+
+/* Comparison bars — light */
+.cmp-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--brd)}
+.cmp-row:last-child{border-bottom:none}
+.cmp-lbl{font-size:10px;font-weight:600;color:var(--t2);width:58px;flex-shrink:0}
+.cmp-bar-wrap{flex:1;height:18px;background:var(--hover);border-radius:5px;overflow:hidden}
+.cmp-bar{height:100%;border-radius:5px;display:flex;align-items:center;padding-left:7px;font-size:9px;font-weight:700;transition:width .5s ease}
+.cmp-val{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--t2);width:50px;text-align:right;flex-shrink:0}
+
+/* Quỹ lương progress bars */
+.ql-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.ql-row:last-child{border-bottom:none}
+.ql-lbl{font-size:11px;font-weight:600;color:var(--ink);width:120px;flex-shrink:0}
+.ql-track{flex:1;height:22px;background:#F3F4F6;border-radius:6px;overflow:hidden;position:relative}
+.ql-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding:0 9px;font-size:10px;font-weight:700;color:#fff;transition:width .6s ease}
+.ql-meta{font-size:10px;color:var(--ink3);width:130px;text-align:right;flex-shrink:0;font-family:'IBM Plex Mono',monospace}
+
+/* Rank dist light */
+.rrow-l{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--brd)}
+.rrow-l:last-child{border-bottom:none}
+.rlbl-l{width:26px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700}
+.rtrack-l{flex:1;height:26px;background:rgba(255,255,255,.05);border-radius:6px;overflow:hidden}
+.rbar-l{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:10px;font-size:10px;font-weight:700;transition:width .4s}
+.rcnt-l{font-size:12px;font-weight:700;width:26px;text-align:right}
+
+/* ══════════════════════════════════════════════
+   PAGE 2 — KHAI THÁC MỦ (dark)
+══════════════════════════════════════════════ */
+#pg2{background:var(--bg);color:var(--t1);padding:0}
+.kt-fbar{
+  background:var(--card);border-bottom:1px solid var(--brd);
+  padding:10px 24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+}
+.kt-flabel{font-size:10px;color:var(--t2);font-weight:600;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.kt-sel{
+  appearance:none;-webkit-appearance:none;
+  background:var(--bg);border:1px solid var(--brd);color:var(--t1);
+  padding:6px 26px 6px 11px;border-radius:7px;
+  font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;outline:none;
+  transition:border-color .15s;min-width:110px;
+}
+.kt-sel:hover,.kt-sel:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(88,166,255,.1)}
+.kt-sw{position:relative;display:inline-block}
+.kt-sw::after{content:'▾';position:absolute;right:8px;top:50%;transform:translateY(-50%);color:var(--t2);pointer-events:none;font-size:10px}
+.kt-fdiv{width:1px;height:22px;background:var(--brd)}
+.kt-main{padding:18px 24px 40px}
+
+/* KPI strip kt */
+.kt-kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px}
+.kt-kpi{background:var(--card);border:1px solid var(--brd);border-radius:var(--radius);padding:13px;position:relative;overflow:hidden}
+.kt-kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kk1::after{background:var(--acc)}.kk2::after{background:var(--grn)}.kk3::after{background:var(--ylw)}
+.kk4::after{background:var(--pur)}.kk5::after{background:var(--red2)}.kk6::after{background:var(--org)}
+.kk-lb{font-size:9px;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:6px}
+.kk-v{font-size:19px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1}
+.kk-v.ca{color:var(--acc)}.kk-v.cg{color:var(--grn)}.kk-v.cy{color:var(--ylw)}.kk-v.cp{color:var(--pur)}.kk-v.cr{color:var(--red2)}.kk-v.co{color:var(--org)}
+.kk-sub{font-size:9px;color:var(--t3);margin-top:3px}
+
+/* shared row/card for kt */
+.kt-row{display:grid;gap:13px;margin-bottom:13px}
+.kt-r21{grid-template-columns:2fr 1fr}.kt-r2{grid-template-columns:1fr 1fr}
+.kt-card{background:var(--card);border:1px solid var(--brd);border-radius:var(--radius);overflow:hidden}
+.kt-ch{padding:11px 15px;border-bottom:1px solid var(--brd);display:flex;justify-content:space-between;align-items:center}
+.kt-ct{font-size:11px;font-weight:700;display:flex;align-items:center;gap:7px}
+.kt-dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+.kt-tag{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--t2);background:var(--bg);border:1px solid var(--brd);border-radius:4px;padding:2px 7px}
+.kt-cb{padding:13px}
+
+/* rank dist */
+.rrow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--brd)}
+.rrow:last-child{border-bottom:none}
+.rlbl{width:26px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700}
+.rtrack{flex:1;height:26px;background:rgba(255,255,255,.05);border-radius:6px;overflow:hidden}
+.rbar{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:10px;font-size:10px;font-weight:700;transition:width .4s ease}
+.rcnt{font-size:12px;font-weight:700;width:26px;text-align:right}
+
+/* hs bar */
+.hb{display:flex;align-items:center;gap:6px}
+.ht{flex:1;height:4px;background:var(--bg);border-radius:2px;overflow:hidden;min-width:50px}
+.hf{height:100%;border-radius:2px}
+
+/* leg kt */
+.kt-leg{display:flex;gap:13px;flex-wrap:wrap;padding:8px 15px 12px}
+.kl-i{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--t2)}
+.kl-d{width:8px;height:8px;border-radius:2px}
+
+/* table kt */
+.kt-tw{overflow-x:auto;max-height:400px;overflow-y:auto}
+.kt-table{width:100%;border-collapse:collapse;font-size:11px}
+.kt-table thead th{background:var(--bg);padding:8px 10px;text-align:left;font-size:9px;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;position:sticky;top:0;border-bottom:1px solid var(--brd);white-space:nowrap;z-index:1}
+.kt-table tbody tr{border-bottom:1px solid var(--brd);transition:background .1s}
+.kt-table tbody tr:hover{background:var(--hover)}
+.kt-table tbody td{padding:7px 10px;white-space:nowrap}
+.nr{text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px}
+.mono{font-family:'IBM Plex Mono',monospace}
+
+/* badges kt */
+.bx{display:inline-block;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:700;font-family:'IBM Plex Mono',monospace}
+.bAp{background:rgba(63,185,80,.18);color:var(--grn);border:1px solid rgba(63,185,80,.35)}
+.bA{background:rgba(88,166,255,.15);color:var(--acc);border:1px solid rgba(88,166,255,.3)}
+.bB{background:rgba(210,153,34,.15);color:var(--ylw);border:1px solid rgba(210,153,34,.3)}
+.bC{background:rgba(227,153,62,.15);color:var(--org);border:1px solid rgba(227,153,62,.3)}
+.bD{background:rgba(248,81,73,.15);color:var(--red2);border:1px solid rgba(248,81,73,.3)}
+
+/* kv cards */
+.kv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;padding:12px}
+.kv-card{background:var(--bg);border:1px solid var(--brd);border-radius:7px;padding:9px 11px;cursor:pointer;transition:all .15s}
+.kv-card:hover,.kv-card.sel{border-color:var(--acc);background:rgba(88,166,255,.05)}
+.kv-name{font-size:11px;font-weight:700;color:var(--acc);font-family:'IBM Plex Mono',monospace}
+.kv-cn{font-size:10px;color:var(--t2);margin-top:2px}
+.kv-hs{font-size:12px;font-weight:700;margin-top:4px}
+
+/* ══════════════════════════════════════════════
+   PAGE 3 — CSVC (light theme)
+══════════════════════════════════════════════ */
+#pg3{background:var(--bg);color:var(--t1);padding:0}
+.cs-fstrip{background:var(--card);border-bottom:1px solid var(--brd);padding:9px 24px}
+.cs-fstrip-inner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:1400px;margin:0 auto;width:100%}
+.cs-flbl{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+.cs-fsel{font-size:12px;font-weight:500;border:1px solid var(--brd);border-radius:7px;padding:5px 10px;color:var(--t1);background:var(--bg);font-family:'Inter',sans-serif;cursor:pointer;outline:none}
+.cs-fsel:hover,.cs-fsel:focus{border-color:var(--grn)}
+.cs-fdiv{width:1px;height:22px;background:var(--brd);flex-shrink:0}
+.cs-main{padding:18px 24px 40px;max-width:1400px;margin:0 auto;background:var(--bg)}
+
+/* shared cards CSVC */
+.c-sh{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.1px;color:var(--grn);padding:0 0 8px;border-bottom:1px solid var(--brd);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.c-sh::before{content:'';width:4px;height:13px;background:var(--grn);border-radius:2px;flex-shrink:0}
+.c-card{background:var(--card);border:1px solid var(--brd);border-radius:12px}
+.c-ch{padding:11px 15px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.c-ct{font-size:12px;font-weight:700;color:var(--t1)}
+.c-cs{font-size:10px;color:var(--t2);margin-top:1px}
+.c-cb{padding:13px 15px}
+
+/* kpi CSVC */
+.c-g5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:14px}
+.c-g2{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px}
+.c-kpi{background:var(--card);border:1px solid var(--brd);border-radius:11px;padding:13px 15px;border-top:3px solid var(--grn);position:relative}
+.c-kpi.a{border-top-color:var(--ylw)}.c-kpi.b{border-top-color:var(--acc)}.c-kpi.r{border-top-color:var(--red2)}
+.c-kl{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.c-kv{font-size:19px;font-weight:800;line-height:1;color:var(--t1)}
+.c-ku{font-size:10px;font-weight:400;color:var(--t2)}
+.c-ks{font-size:10px;color:var(--t3);margin-top:3px}
+.c-kb{position:absolute;top:9px;right:9px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px}
+
+/* flow CSVC */
+.flow{display:flex;align-items:stretch;background:var(--card);border-radius:13px;overflow:hidden;border:1px solid var(--brd);margin-bottom:13px}
+.fstep{flex:1;padding:14px 12px;display:flex;flex-direction:column;gap:5px;position:relative;background:var(--card)}
+.fstep+.fstep::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:1px;background:var(--brd)}
+.fnum{width:23px;height:23px;border-radius:50%;background:var(--g2);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fic{font-size:17px}
+.ftit{font-size:11px;font-weight:700;color:var(--t1)}
+.fdesc{font-size:10px;color:var(--t2);line-height:1.5}
+.ffml{background:var(--hover);border-radius:7px;padding:6px 9px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--grn);border-left:3px solid var(--grn)}
+.farr{display:flex;align-items:center;justify-content:center;padding:0 5px;color:var(--g4);font-size:17px;align-self:center;flex-shrink:0}
+
+/* progress CSVC */
+.pt{height:6px;background:var(--hover);border-radius:3px;overflow:hidden}
+.pf{height:100%;border-radius:3px}
+.pg{background:linear-gradient(90deg,var(--g4),var(--g3))}.pa{background:linear-gradient(90deg,#F6C84A,var(--amber))}.pr{background:linear-gradient(90deg,#F8857A,var(--red))}
+
+/* table CSVC */
+.tscroll{overflow:auto;max-height:400px}
+.c-table{width:100%;border-collapse:collapse;font-size:11px}
+.c-table thead th{position:sticky;top:0;z-index:2;background:var(--g1);color:#fff;padding:8px 10px;font-weight:600;font-size:9px;white-space:nowrap;text-align:left}
+.c-table thead th.r{text-align:right}
+.c-table tbody tr:nth-child(even){background:rgba(255,255,255,.02)}
+.c-table tbody tr:hover{background:var(--hover)}
+.c-table tbody td{padding:7px 10px;color:var(--t2);border-bottom:1px solid var(--brd);vertical-align:middle}
+.c-tr{text-align:right;font-family:'IBM Plex Mono',monospace}
+.c-tb{font-weight:600;color:var(--t1)}
+.c-tm{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--grn)}
+.tfoot-r td{background:var(--hover);font-weight:700;color:var(--grn);border-top:2px solid var(--grn)}
+.bdg{display:inline-flex;align-items:center;padding:1px 7px;border-radius:7px;font-size:10px;font-weight:700}
+.bok{background:rgba(63,185,80,.15);color:var(--grn)}.bwn{background:rgba(210,153,34,.15);color:var(--ylw)}.brd2{background:rgba(248,81,73,.15);color:var(--red2)}.bgy{background:var(--hover);color:var(--t3)}
+.c-leg{display:flex;gap:10px;flex-wrap:wrap}
+.c-li{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--t2)}
+.c-ld{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+
+/* ═══════════ RESPONSIVE ═══════════ */
+@media(max-width:900px){
+  .kt-kpi-row{grid-template-columns:repeat(3,1fr)}.ov-kpi-row{grid-template-columns:repeat(3,1fr)}
+  .kt-r21,.kt-r2,.ov-grid,.ins-grid,.c-g5,.c-g2{grid-template-columns:1fr}
+  .tab-nav{padding:0 14px}
+  .tab-btn{padding:11px 14px;font-size:11px}
+  #pg1,#pg2 .kt-main,#pg3 .cs-main{padding-left:14px;padding-right:14px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+  GLOBAL HEADER
+═══════════════════════════════════════ -->
+<div class="g-hdr">
+  <div class="g-hdr-l">
+    <div class="g-logo">🌿</div>
+    <div>
+      <div class="g-title">Dashboard Quản Lý Lương Công Nhân</div>
+      <div class="g-sub">Tập đoàn cao su · Đội Sản Xuất Số 1 · Tổng quan + Chi tiết 2 bộ phận</div>
+    </div>
+  </div>
+  <div class="g-badge">2025 – 2026</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+  TAB NAV
+═══════════════════════════════════════ -->
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab(0)" id="tab0">
+    <span class="tab-icon">📊</span> Tổng Quan
+  </button>
+  <button class="tab-btn" onclick="switchTab(1)" id="tab1">
+    <span class="tab-icon">🌿</span> Lương CN Khai Thác Mủ
+  </button>
+  <button class="tab-btn" onclick="switchTab(2)" id="tab2">
+    <span class="tab-icon">🌱</span> Lương CN Chăm Sóc Vườn Cây
+  </button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+  PAGE 1 — TỔNG QUAN
+════════════════════════════════════════════════════════ -->
+<div class="tab-panel active" id="pg1">
+  <div class="ov-fbar">
+    <div class="ov-fbar-inner">
+    <span class="ov-flabel">Hạng KT (khai thác):</span>
+    <select class="ov-fsel" id="ov-selHang" onchange="ovRender()">
+      <option value="all">Tất cả hạng</option>
+      <option value="A">Hạng A</option><option value="B">Hạng B</option>
+      <option value="C">Hạng C</option><option value="D">Hạng D</option>
+    </select>
+    <div class="ov-fdiv"></div>
+    <span class="ov-flabel">Đội CSVC:</span>
+    <select class="ov-fsel" id="ov-selDoi" onchange="ovRender()">
+      <option value="all">Tất cả đội</option>
+      <option value="A">Đội A</option><option value="B">Đội B</option>
+      <option value="C">Đội C</option><option value="D">Đội D</option>
+    </select>
+    <div class="ov-fdiv"></div>
+    <span id="ov-badge" style="font-size:10px;color:var(--grn);font-weight:600;font-family:'IBM Plex Mono',monospace"></span>
+    </div>
+  </div>
+  <div class="ov-wrap">
+    <div class="ov-kpi-row">
+      <div class="ov-kpi k1" onclick="switchTab(1)"><div class="ok-lb">CN Khai Thác</div><div class="ok-v" style="color:#1D4ED8" id="ov-kt-cn">—</div><div class="ok-sub">công nhân được lọc</div></div>
+      <div class="ov-kpi k2" onclick="switchTab(1)"><div class="ok-lb">Đã chi — KT</div><div class="ok-v" style="color:var(--g2)" id="ov-kt-paid">—</div><div class="ok-sub">Riel · tháng 12/2025</div></div>
+      <div class="ov-kpi k3" onclick="switchTab(2)"><div class="ok-lb">CN Chăm Sóc VC</div><div class="ok-v" style="color:var(--amber)" id="ov-cs-cn">—</div><div class="ok-sub">công nhân được lọc</div></div>
+      <div class="ov-kpi k4" onclick="switchTab(2)"><div class="ok-lb">Đã chi — CSVC</div><div class="ok-v" style="color:var(--g2)" id="ov-cs-paid">—</div><div class="ok-sub" id="ov-cs-pct-sub">M Riel · % quỹ KH</div></div>
+      <div class="ov-kpi k5" onclick="switchTab(2)"><div class="ok-lb">Quỹ CSVC còn lại</div><div class="ok-v" style="color:var(--red)" id="ov-cs-remain">—</div><div class="ok-sub">M Riel · chưa giải ngân</div></div>
+      <div class="ov-kpi k6"><div class="ok-lb">TB Còn Nhận / CN KT</div><div class="ok-v" style="color:#7C3AED" id="ov-hs-avg">—</div><div class="ok-sub">Riel · sau khấu trừ</div></div>
+    </div>
+    <div class="ov-sh">A. Quỹ lương tổng quan — đã chi / còn lại</div>
+    <div class="ov-card" style="margin-bottom:16px">
+      <div class="ov-cb" id="ov-quy-bars" style="padding:16px 20px"></div>
+    </div>
+    <div class="ov-sh">B. So sánh phân bổ lương — CN Khai Thác vs CN CSVC</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+      <div class="ov-card">
+        <div class="ov-ch">
+          <div class="ov-ct"><span class="ov-dot" style="background:var(--acc)"></span>Phân bổ lương CN Khai Thác — theo Hạng KT</div>
+          <span class="ov-tag">M Riel</span>
+        </div>
+        <div class="ov-cb"><div style="height:240px;position:relative"><canvas id="ov-chart-kt"></canvas></div></div>
+      </div>
+      <div class="ov-card">
+        <div class="ov-ch">
+          <div class="ov-ct"><span class="ov-dot" style="background:var(--grn)"></span>Quỹ lương CN CSVC — KH vs TH theo Đội</div>
+          <div style="display:flex;gap:8px">
+            <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--t2)"><span style="width:9px;height:9px;background:rgba(88,166,255,.2);border:1.5px solid var(--acc);border-radius:2px;display:inline-block"></span>KH</span>
+            <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--t2)"><span style="width:9px;height:9px;background:rgba(63,185,80,.75);border-radius:2px;display:inline-block"></span>TH</span>
+          </div>
+        </div>
+        <div class="ov-cb"><div style="height:240px;position:relative"><canvas id="ov-chart-csvc"></canvas></div></div>
+      </div>
+    </div>
+        <div class="ov-sh">C. Top công nhân khai thác &amp; Phân bố hạng kĩ thuật</div>
+    <div class="ov-grid">
+      <div class="ov-card">
+        <div class="ov-ch"><div class="ov-ct"><span class="ov-dot" style="background:var(--amber)"></span>Top 10 CN Khai Thác — theo tổng lương</div><span class="ov-tag">Riel · giảm dần</span></div>
+        <div class="ov-cb" id="ov-kv-bars" style="max-height:280px;overflow-y:auto;padding:10px 14px"></div>
+      </div>
+      <div class="ov-card">
+        <div class="ov-ch"><div class="ov-ct"><span class="ov-dot" style="background:#7C3AED"></span>Phân bố hạng kĩ thuật — CN Khai Thác</div><span class="ov-tag">A → D</span></div>
+        <div class="ov-cb" id="ov-rank-bars" style="padding:12px 16px"></div>
+      </div>
+    </div>
+    <div style="text-align:center;font-size:10px;color:var(--t3);padding-top:4px;padding-bottom:20px">Nhấn vào thẻ KPI để xem chi tiết từng bộ phận</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+  PAGE 2 — KHAI THÁC MỦ
+═══════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="pg2">
+  <!-- Filter bar -->
+  <div class="kt-fbar">
+    <span class="kt-flabel">Hạng KT:</span>
+    <div class="kt-sw"><select class="kt-sel" id="kt-selKT">
+      <option value="all">Tất cả hạng</option>
+      <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+    </select></div>
+    <div class="kt-fdiv"></div>
+    <span class="kt-flabel">Nhóm lương:</span>
+    <div class="kt-sw"><select class="kt-sel" id="kt-selNhom">
+      <option value="all">Tất cả</option>
+      <option value="cao">Cao (≥2 tr Riel)</option>
+      <option value="tb">Trung bình (1.2–2 tr)</option>
+      <option value="thap">Thấp (&lt;1.2 tr Riel)</option>
+    </select></div>
+    <div class="kt-fdiv"></div>
+    <span class="kt-flabel">Tìm CN:</span>
+    <div class="kt-sw"><input class="kt-sel" id="kt-selSearch" type="text" placeholder="Tên hoặc MSCN..." style="width:150px"></div>
+    <div class="kt-fdiv"></div>
+    <span id="kt-countTag" style="font-size:10px;color:var(--acc);font-family:'IBM Plex Mono',monospace;font-weight:600"></span>
+  </div>
+
+  <div class="kt-main">
+    <!-- KPI -->
+    <div class="kt-kpi-row">
+      <div class="kt-kpi kk1"><div class="kk-lb">Tổng CN</div><div class="kk-v ca" id="kk-CN">—</div><div class="kk-sub">công nhân khai thác</div></div>
+      <div class="kt-kpi kk2"><div class="kk-lb">Tổng Quỹ Lương</div><div class="kk-v cg" id="kk-TL">—</div><div class="kk-sub">Riel · T12/2025</div></div>
+      <div class="kt-kpi kk1"><div class="kk-lb">TB Chuyên Cần</div><div class="kk-v ca" id="kk-CC">—</div><div class="kk-sub">Riel / người</div></div>
+      <div class="kt-kpi kk2"><div class="kk-lb">TB SL Mủ Đông Chén 240r</div><div class="kk-v cg" id="kk-SL">—</div><div class="kk-sub">Riel / người</div></div>
+      <div class="kt-kpi kk3"><div class="kk-lb">TB SL Mủ Đông Chén 400r</div><div class="kk-v cy" id="kk-HS">—</div><div class="kk-sub">Riel / người</div></div>
+      <div class="kt-kpi kk4"><div class="kk-lb">TB Kỹ Thuật</div><div class="kk-v cp" id="kk-KT">—</div><div class="kk-sub">thưởng / điều chỉnh</div></div>
+    </div>
+
+    <!-- Row 1: Thu nhập -->
+    <div class="kt-row kt-r21">
+      <div class="kt-card">
+        <div class="kt-ch"><div class="kt-ct"><span class="kt-dot" style="background:var(--grn)"></span>Cơ cấu lương từng CN — top 20 (Riel)</div><span class="kt-tag">Chuyên cần · Sản lượng · Kỹ thuật</span></div>
+        <div class="kt-cb"><div style="height:260px;position:relative"><canvas id="kt-cCoCau"></canvas></div></div>
+        <div class="kt-leg">
+          <div class="kl-i"><span class="kl-d" style="background:var(--acc)"></span>Chuyên cần</div>
+          <div class="kl-i"><span class="kl-d" style="background:var(--grn)"></span>SL mủ 240r</div>
+          <div class="kl-i"><span class="kl-d" style="background:#52e6a0"></span>SL mủ 400r</div>
+          <div class="kl-i"><span class="kl-d" style="background:var(--pur)"></span>Kỹ thuật (+)</div>
+          <div class="kl-i"><span class="kl-d" style="background:var(--red2)"></span>Kỹ thuật (-)</div>
+        </div>
+      </div>
+      <div class="kt-card">
+        <div class="kt-ch"><div class="kt-ct"><span class="kt-dot" style="background:var(--pur)"></span>Cơ cấu quỹ lương toàn đơn vị</div><span class="kt-tag">% tổng</span></div>
+        <div class="kt-cb">
+          <div style="height:190px;position:relative"><canvas id="kt-cDonut"></canvas></div>
+          <div id="kt-donutLeg" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Phân loại theo hạng -->
+    <div class="kt-row kt-r2">
+      <div class="kt-card">
+        <div class="kt-ch"><div class="kt-ct"><span class="kt-dot" style="background:var(--ylw)"></span>Lương trung bình theo Hạng kỹ thuật</div><span class="kt-tag">Chuyên cần · Sản lượng · Kỹ thuật</span></div>
+        <div class="kt-cb"><div style="height:250px;position:relative"><canvas id="kt-cHS"></canvas></div></div>
+      </div>
+      <div class="kt-card">
+        <div class="kt-ch"><div class="kt-ct"><span class="kt-dot" style="background:var(--pur)"></span>Phân bố hạng kĩ thuật</div><span class="kt-tag">A → D</span></div>
+        <div class="kt-cb" id="kt-rankDist" style="padding:12px 15px"></div>
+      </div>
+    </div>
+
+    <!-- Row 3: Sản lượng & Top lương -->
+    <div class="kt-row kt-r2">
+      <div class="kt-card">
+        <div class="kt-ch"><div class="kt-ct"><span class="kt-dot" style="background:var(--org)"></span>SL mủ 400r vs Tổng lương — theo hạng</div><span class="kt-tag">Scatter · bubble=SL 240r</span></div>
+        <div class="kt-cb"><div style="height:250px;position:relative"><canvas id="kt-cScatter"></canvas></div></div>
+      </div>
+      <div class="kt-card">
+        <div class="kt-ch"><div class="kt-ct"><span class="kt-dot" style="background:var(--acc)"></span>Top 20 tổng lương — xếp giảm dần</div><span class="kt-tag">Riel</span></div>
+        <div class="kt-cb"><div style="height:250px;position:relative"><canvas id="kt-cTop"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- Hạng grid -->
+    <div class="kt-card" style="margin-bottom:13px">
+      <div class="kt-ch"><div class="kt-ct"><span class="kt-dot" style="background:var(--org)"></span>Tổng quan theo Hạng kỹ thuật</div><span class="kt-tag">A · B · C · D</span></div>
+      <div id="kt-kvGrid" class="kv-grid"></div>
+    </div>
+
+    <!-- Table -->
+    <div class="kt-card">
+      <div class="kt-ch"><div class="kt-ct"><span class="kt-dot" style="background:var(--t2)"></span>Bảng chi tiết lương công nhân khai thác</div><span class="kt-tag" id="kt-tbTag">—</span></div>
+      <div class="kt-tw">
+        <table class="kt-table">
+          <thead><tr>
+            <th>MSCN</th><th>Họ tên</th><th style="text-align:center">Hạng</th>
+            <th style="text-align:right">Chuyên cần</th>
+            <th style="text-align:right">SL mủ 240r</th>
+            <th style="text-align:right">SL mủ 400r</th>
+            <th style="text-align:right">Kỹ thuật</th>
+            <th style="text-align:right">Tổng lương</th>
+            <th style="text-align:right">Khấu trừ</th>
+            <th style="text-align:right">Còn nhận</th>
+          </tr></thead>
+          <tbody id="kt-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- /kt-main -->
+</div><!-- /pg2 -->
+
+<!-- ═══════════════════════════════════════════════════════
+  PAGE 3 — CSVC
+═══════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="pg3">
+  <!-- Filter strip CSVC -->
+  <div class="cs-fstrip">
+    <div class="cs-fstrip-inner">
+    <span class="cs-flbl">Đội:</span>
+    <select class="cs-fsel" id="f-doi" onchange="csApplyFilter()">
+      <option value="all">Tất cả</option>
+      <option value="A">Đội A</option><option value="B">Đội B</option>
+      <option value="C">Đội C</option><option value="D">Đội D</option>
+    </select>
+    <div class="cs-fdiv"></div>
+    <span class="cs-flbl">Hạng mục:</span>
+    <select class="cs-fsel" id="f-hm" onchange="csApplyFilter()"><option value="all">Tất cả</option></select>
+    <div class="cs-fdiv"></div>
+    <span class="cs-flbl">Lô:</span>
+    <select class="cs-fsel" id="f-lo" onchange="csApplyFilter()"><option value="all">Tất cả</option></select>
+    <div class="cs-fdiv"></div>
+    <span class="cs-flbl">Tháng:</span>
+    <select class="cs-fsel" id="f-thang" onchange="csApplyFilter()">
+      <option value="all">Tất cả</option>
+      <option value="1">T1</option><option value="2">T2</option><option value="3">T3</option>
+      <option value="4">T4</option><option value="5">T5</option><option value="6">T6</option>
+      <option value="7">T7</option><option value="8">T8</option><option value="9">T9</option>
+      <option value="10">T10</option><option value="11">T11</option><option value="12">T12</option>
+    </select>
+    <button onclick="csReset()" style="font-size:11px;padding:4px 11px;border:1px solid var(--brd);border-radius:7px;background:var(--hover);cursor:pointer;color:var(--t2);font-family:'Inter',sans-serif">↺ Reset</button>
+    <span id="cs-badge" style="margin-left:auto;font-size:11px;color:var(--t2)"></span>
+    </div>
+  </div>
+
+  <div class="cs-main">
+    <!-- Flow -->
+    <div class="c-sh">A. Quy trình tính lương CSVC vườn cây</div>
+    <div class="flow">
+      <div class="fstep" style="background:linear-gradient(160deg,#EAFAF1,#fff)">
+        <div style="display:flex;gap:7px;align-items:center"><div class="fnum">1</div><div class="fic">📋</div></div>
+        <div class="ftit">Kế Hoạch Công Việc</div>
+        <div class="fdesc">Lập KH CSVC theo <b>Mã CV · Lô · Đội</b>. Xác định định mức và diện tích → ra <b>Quỹ Lương KH</b> toàn năm.</div>
+        <div class="ffml">Quỹ KH = Định mức × DT × 171,000đ</div>
+      </div>
+      <div class="farr">→</div>
+      <div class="fstep">
+        <div style="display:flex;gap:7px;align-items:center"><div class="fnum">2</div><div class="fic">👥</div></div>
+        <div class="ftit">Phân Bổ Chi Tiết CN</div>
+        <div class="fdesc">Chia DT kế hoạch cho <b>từng công nhân</b> trong đội theo lô và hạng mục.</div>
+        <div class="ffml">DT/CN = DT lô ÷ số CN<br>Công KH = Định mức × DT giao</div>
+      </div>
+      <div class="farr">→</div>
+      <div class="fstep" style="background:linear-gradient(160deg,#FEF9EC,#fff)">
+        <div style="display:flex;gap:7px;align-items:center"><div class="fnum">3</div><div class="fic">✅</div></div>
+        <div class="ftit">Nghiệm Thu → Phúc Tra</div>
+        <div class="fdesc">KTV nghiệm thu thực địa → Tổ trưởng phúc tra xác nhận. <b>DT phúc tra</b> = cơ sở thanh toán.</div>
+        <div class="ffml">% HT = DT phúc tra / DT giao<br>DT PT ≤ DT NT ≤ DT giao</div>
+      </div>
+      <div class="farr">→</div>
+      <div class="fstep">
+        <div style="display:flex;gap:7px;align-items:center"><div class="fnum">4</div><div class="fic">🔢</div></div>
+        <div class="ftit">Chốt Số Công</div>
+        <div class="fdesc">Tính số công thực tế dựa trên DT phúc tra và định mức hạng mục.</div>
+        <div class="ffml">Số công TH = Định mức × DT phúc tra</div>
+      </div>
+      <div class="farr">→</div>
+      <div class="fstep" style="background:linear-gradient(160deg,#EAFAF1,#fff)">
+        <div style="display:flex;gap:7px;align-items:center"><div class="fnum">5</div><div class="fic">💵</div></div>
+        <div class="ftit">Bảng Lương</div>
+        <div class="fdesc">Lương sản phẩm = Số công thực × đơn giá. Luỹ kế so với Quỹ KH.</div>
+        <div class="ffml">Lương = Số công × 171,000đ<br>% Quỹ = Luỹ kế / Quỹ KH</div>
+      </div>
+    </div>
+
+    <!-- KPI -->
+    <div class="c-sh">B. Tổng quan quỹ lương</div>
+    <div class="c-g5" id="cs-kpi-row"></div>
+
+    <!-- Chart đầu việc -->
+    <div class="c-sh">C. Phân tích quỹ lương và thực hiện theo đầu việc</div>
+    <div class="c-card" style="margin-bottom:13px">
+      <div class="c-ch">
+        <div><div class="c-ct">Quỹ Lương KH vs TH Theo Đầu Việc</div><div class="c-cs">Thành tiền (M Riel) · cột sáng = KH · cột đặc = TH · màu theo đội</div></div>
+        <div class="c-leg">
+          <div class="c-li"><div class="c-ld" style="background:#0F3D2E"></div>Đội A</div>
+          <div class="c-li"><div class="c-ld" style="background:#52B788"></div>Đội B</div>
+          <div class="c-li"><div class="c-ld" style="background:#E9A825"></div>Đội C</div>
+          <div class="c-li"><div class="c-ld" style="background:#C1121F"></div>Đội D</div>
+        </div>
+      </div>
+      <div class="c-cb"><div style="height:220px;position:relative"><canvas id="cs-barCV"></canvas></div></div>
+    </div>
+    <div class="c-card" style="margin-bottom:13px">
+      <div class="c-ch"><div class="c-ct">Tiến Độ Thực Hiện Theo Đầu Việc</div><div class="c-cs">Luỹ kế công / kế hoạch</div></div>
+      <div class="c-cb" id="cs-prog-cv" style="display:grid;grid-template-columns:1fr 1fr;gap:9px 26px"></div>
+    </div>
+
+    <!-- Charts đội -->
+    <div class="c-sh">D. So sánh hiệu suất — đội & công nhân</div>
+    <div class="c-g2">
+      <div class="c-card">
+        <div class="c-ch"><div><div class="c-ct">Tổng Công & Lương TH Theo Đội</div><div class="c-cs">Công (cột đậm) · Lương M Riel (cột nhạt)</div></div></div>
+        <div class="c-cb">
+          <div style="height:190px;position:relative"><canvas id="cs-barDoiCong"></canvas></div>
+          <div class="c-leg" style="margin-top:8px">
+            <div class="c-li"><div class="c-ld" style="background:#0F3D2E"></div>Đội A</div>
+            <div class="c-li"><div class="c-ld" style="background:#52B788"></div>Đội B</div>
+            <div class="c-li"><div class="c-ld" style="background:#E9A825"></div>Đội C</div>
+            <div class="c-li"><div class="c-ld" style="background:#C1121F"></div>Đội D</div>
+          </div>
+        </div>
+      </div>
+      <div class="c-card">
+        <div class="c-ch"><div class="c-ct">Radar Đa Chỉ Số Theo Đội</div><div class="c-cs">Công · Lương · Số CN · Số đầu việc</div></div>
+        <div class="c-cb" style="padding:12px 16px">
+          <div style="max-width:270px;margin:0 auto;position:relative"><canvas id="cs-radar"></canvas></div>
+          <div class="c-leg" style="justify-content:center;flex-wrap:wrap;margin-top:8px">
+            <div class="c-li"><div class="c-ld" style="background:#0F3D2E;border-radius:50%"></div>Đội A</div>
+            <div class="c-li"><div class="c-ld" style="background:#52B788;border-radius:50%"></div>Đội B</div>
+            <div class="c-li"><div class="c-ld" style="background:#E9A825;border-radius:50%"></div>Đội C</div>
+            <div class="c-li"><div class="c-ld" style="background:#C1121F;border-radius:50%"></div>Đội D</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="c-sh">E. Bảng lương chi tiết từng công nhân CSVC</div>
+    <div class="c-card">
+      <div class="c-ch">
+        <div><div class="c-ct">Chi Tiết Lương — Nghiệm Thu — Phúc Tra</div><div class="c-cs">Sắp xếp theo lương giảm dần</div></div>
+        <span id="cs-tbl-count" style="font-size:10px;color:var(--t2);font-weight:600"></span>
+      </div>
+      <div class="tscroll">
+        <table class="c-table">
+          <thead><tr>
+            <th>Hạng</th><th>Công nhân</th><th>Đội</th><th>Hạng mục CV</th><th>Lô</th>
+            <th class="r">DT giao (ha)</th><th class="r">DT NT (ha)</th><th class="r">DT PT (ha)</th>
+            <th class="r">Định mức</th><th class="r">Số công</th>
+            <th class="r">% HT</th><th class="r">Lương (đ)</th><th>Hiệu suất</th>
+          </tr></thead>
+          <tbody id="cs-tbody"></tbody>
+          <tfoot><tr class="tfoot-r">
+            <td colspan="9" style="padding:7px 10px">TỔNG CỘNG</td>
+            <td class="c-tr" id="cs-ft-cong"></td>
+            <td></td><td class="c-tr c-tm" id="cs-ft-luong"></td><td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+      <div style="padding:6px 13px;border-top:1px solid var(--brd);background:var(--card);font-size:10px;color:var(--t3);display:flex;justify-content:space-between">
+        <span style="color:var(--t3)">Cuộn để xem thêm · Header cố định</span>
+        <span id="cs-ft-sub" style="font-weight:600;color:var(--grn)"></span>
+      </div>
+    </div>
+  </div><!-- /cs-main -->
+</div><!-- /pg3 -->
+
+<!-- ════════════════════════════════════
+  JAVASCRIPT
+════════════════════════════════════ -->
+<script>
+// ═══════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════
+function switchTab(idx){
+  document.querySelectorAll('.tab-panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
+  if(idx===1&&!ktRendered){ktInit();ktRendered=true}
+  if(idx===2&&!csRendered){csInit();csRendered=true}
+  if(idx===0&&!ovRendered){ovRender();ovRendered=true}
+}
+let ktRendered=false, csRendered=false, ovRendered=false;
+
+// ═══════════════════════════════════════════════════════════
+// ██  PAGE 2 — KHAI THÁC DATA & LOGIC
+// ═══════════════════════════════════════════════════════════
+const KT_RAW=[{id:'0001',name:'HON VANNTHA',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:307200,thuong:160000,tong:1585200,tongTruKT:1585200,chenhKT:0,tamung:300000,thueTNCN:24500,bhxh:24000,connhan:1236700},{id:'0002',name:'TUEUR SOKBOT',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:756800,thuong:0,tong:2034800,tongTruKT:2034800,chenhKT:0,tamung:300000,thueTNCN:24241,bhxh:24000,connhan:1686559},{id:'0003',name:'HEANG SREYTOUCH',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:658400,thuong:80000,tong:1936400,tongTruKT:1936400,chenhKT:0,tamung:300000,thueTNCN:30702,bhxh:24000,connhan:1581698},{id:'0004',name:'DAEUKPHORN',hang:'D',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:169600,thuong:160000,tong:1447600,tongTruKT:1315040,chenhKT:-132560,tamung:300000,thueTNCN:10221,bhxh:24000,connhan:980819},{id:'0005',name:'LANH LEANG',hang:'C',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:564400,thuong:0,tong:1842400,tongTruKT:1756380,chenhKT:-86020,tamung:300000,thueTNCN:37470,bhxh:24000,connhan:1394910},{id:'0006',name:'KHOEUN RATHA',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:645200,thuong:0,tong:1923200,tongTruKT:1923200,chenhKT:0,tamung:300000,thueTNCN:43980,bhxh:24000,connhan:1555220},{id:'0007',name:'MOT MACH',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:516800,thuong:160000,tong:1794800,tongTruKT:1794800,chenhKT:0,tamung:300000,thueTNCN:36550,bhxh:24000,connhan:1434250},{id:'0008',name:'VOEUT SREYNEANG',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:294800,thuong:160000,tong:1572800,tongTruKT:1572800,chenhKT:0,tamung:300000,thueTNCN:24700,bhxh:24000,connhan:1224100},{id:'0009',name:'KHON KHUT',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:550800,thuong:160000,tong:1828800,tongTruKT:1828800,chenhKT:0,tamung:300000,thueTNCN:41150,bhxh:24000,connhan:1463650},{id:'0010',name:'NHOEM SOKENG',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:651200,thuong:160000,tong:1929200,tongTruKT:1929200,chenhKT:0,tamung:300000,thueTNCN:50140,bhxh:24000,connhan:1555060},{id:'0011',name:'CHAEUT PHAT',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:553600,thuong:0,tong:1831600,tongTruKT:1831600,chenhKT:0,tamung:300000,thueTNCN:21360,bhxh:24000,connhan:1486240},{id:'0012',name:'CHENG KOEMHAT',hang:'C',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:606800,thuong:0,tong:1884800,tongTruKT:1796660,chenhKT:-88140,tamung:300000,thueTNCN:59410,bhxh:24000,connhan:1413250},{id:'0013',name:'KHMAO KHEAN',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:515200,thuong:80000,tong:1793200,tongTruKT:1793200,chenhKT:0,tamung:300000,thueTNCN:35710,bhxh:24000,connhan:1433490},{id:'0014',name:'TUOCH NAL',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:358400,thuong:80000,tong:1636400,tongTruKT:1636400,chenhKT:0,tamung:300000,thueTNCN:29430,bhxh:24000,connhan:1282970},{id:'0015',name:'CHHOEM TONY',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:552800,thuong:160000,tong:1830800,tongTruKT:1830800,chenhKT:0,tamung:300000,thueTNCN:28498,bhxh:24000,connhan:1478302},{id:'0016',name:'CHHOEUN SREY TOUCH',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:397200,thuong:0,tong:1675200,tongTruKT:1675200,chenhKT:0,tamung:300000,thueTNCN:20328,bhxh:24000,connhan:1330872},{id:'0017',name:'LORN PANHA',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:517200,thuong:0,tong:1795200,tongTruKT:1795200,chenhKT:0,tamung:300000,thueTNCN:20660,bhxh:24000,connhan:1450540},{id:'0018',name:'OL SREY THO',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:530800,thuong:160000,tong:1808800,tongTruKT:1808800,chenhKT:0,tamung:300000,thueTNCN:22660,bhxh:24000,connhan:1462140},{id:'0019',name:'HEANG SREYTHOM',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:509200,thuong:80000,tong:1787200,tongTruKT:1787200,chenhKT:0,tamung:300000,thueTNCN:25400,bhxh:24000,connhan:1437800},{id:'0020',name:'HE LINA',hang:'C',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:794400,thuong:160000,tong:2072400,tongTruKT:1974880,chenhKT:-97520,tamung:300000,thueTNCN:24500,bhxh:24000,connhan:1626380},{id:'0021',name:'SAN SOK NA',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:492000,thuong:80000,tong:1770000,tongTruKT:1770000,chenhKT:0,tamung:300000,thueTNCN:31590,bhxh:24000,connhan:1414410},{id:'0022',name:'KHUN BUNNA',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:498400,thuong:80000,tong:1776400,tongTruKT:1776400,chenhKT:0,tamung:300000,thueTNCN:31590,bhxh:24000,connhan:1420810},{id:'0023',name:'NN MUM',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:622800,thuong:160000,tong:1900800,tongTruKT:1900800,chenhKT:0,tamung:300000,thueTNCN:46220,bhxh:24000,connhan:1530580},{id:'0024',name:'DAEUK PHON',hang:'D',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:348400,thuong:160000,tong:1626400,tongTruKT:1475960,chenhKT:-150440,tamung:300000,thueTNCN:24500,bhxh:24000,connhan:1127460},{id:'0025',name:'KHUN PHAI',hang:'D',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:348400,thuong:160000,tong:1626400,tongTruKT:1475960,chenhKT:-150440,tamung:300000,thueTNCN:24500,bhxh:24000,connhan:1127460},{id:'0026',name:'UM KHON',hang:'C',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:348400,thuong:160000,tong:1626400,tongTruKT:1551180,chenhKT:-75220,tamung:300000,thueTNCN:19910,bhxh:24000,connhan:1207270},{id:'0027',name:'KHUN KHOM',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:348400,thuong:160000,tong:1626400,tongTruKT:1626400,chenhKT:0,tamung:300000,thueTNCN:24500,bhxh:24000,connhan:1277900},{id:'0028',name:'SOK PHAI',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:529200,thuong:160000,tong:1807200,tongTruKT:1807200,chenhKT:0,tamung:300000,thueTNCN:34790,bhxh:24000,connhan:1448410},{id:'0029',name:'MUONG THY',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:869200,thuong:0,tong:2147200,tongTruKT:2147200,chenhKT:0,tamung:300000,thueTNCN:68170,bhxh:24000,connhan:1755030},{id:'0030',name:'NGOURN MAP',hang:'C',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:654000,thuong:240000,tong:1932000,tongTruKT:1841500,chenhKT:-90500,tamung:300000,thueTNCN:51500,bhxh:24000,connhan:1466000},{id:'0031',name:'HORN NOEURM',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:770800,thuong:160000,tong:2048800,tongTruKT:2048800,chenhKT:0,tamung:300000,thueTNCN:59770,bhxh:24000,connhan:1665030},{id:'0032',name:'PHA SOPHARA',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:469600,thuong:160000,tong:1747600,tongTruKT:1747600,chenhKT:0,tamung:300000,thueTNCN:24180,bhxh:24000,connhan:1399420},{id:'0033',name:'NEM SOK THEAR',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:488000,thuong:160000,tong:1766000,tongTruKT:1766000,chenhKT:0,tamung:300000,thueTNCN:26080,bhxh:24000,connhan:1415920},{id:'0034',name:'HEANG HUY SAN',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:496000,thuong:160000,tong:1774000,tongTruKT:1774000,chenhKT:0,tamung:300000,thueTNCN:32950,bhxh:24000,connhan:1417050},{id:'0035',name:'SIM SA MON',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:462800,thuong:160000,tong:1740800,tongTruKT:1740800,chenhKT:0,tamung:300000,thueTNCN:30590,bhxh:24000,connhan:1386210},{id:'0036',name:'SAM CHANNDAN',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:515200,thuong:80000,tong:1793200,tongTruKT:1793200,chenhKT:0,tamung:300000,thueTNCN:29150,bhxh:24000,connhan:1440050},{id:'0037',name:'SAM SOKUM',hang:'A',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:353600,thuong:0,tong:1631600,tongTruKT:1707080,chenhKT:75480,tamung:300000,thueTNCN:17245,bhxh:24000,connhan:1365835},{id:'0038',name:'SONG SREYROTH',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:739200,thuong:0,tong:2017200,tongTruKT:2017200,chenhKT:0,tamung:300000,thueTNCN:54260,bhxh:24000,connhan:1638940},{id:'0039',name:'NEAK LORN',hang:'C',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:348400,thuong:160000,tong:1626400,tongTruKT:1551180,chenhKT:-75220,tamung:300000,thueTNCN:14857,bhxh:24000,connhan:1212323},{id:'0040',name:'THORN CHANNTHEN',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:637200,thuong:0,tong:1915200,tongTruKT:1915200,chenhKT:0,tamung:300000,thueTNCN:22840,bhxh:24000,connhan:1568360},{id:'0041',name:'CHERT VOEUN',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:585200,thuong:80000,tong:1863200,tongTruKT:1863200,chenhKT:0,tamung:300000,thueTNCN:37950,bhxh:24000,connhan:1501250},{id:'0042',name:'DIN PHORS',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:1010000,thuong:160000,tong:2288000,tongTruKT:2288000,chenhKT:0,tamung:300000,thueTNCN:94806,bhxh:24000,connhan:1869194},{id:'0043',name:'SON SRAY PHORN',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:585200,thuong:240000,tong:1863200,tongTruKT:1863200,chenhKT:0,tamung:300000,thueTNCN:37950,bhxh:24000,connhan:1501250},{id:'0044',name:'VOEURN KOY',hang:'C',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:585200,thuong:240000,tong:1863200,tongTruKT:1776140,chenhKT:-87060,tamung:300000,thueTNCN:37950,bhxh:24000,connhan:1414190},{id:'0045',name:'CHAEUT PHORN',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:782400,thuong:160000,tong:2060400,tongTruKT:2060400,chenhKT:0,tamung:300000,thueTNCN:65010,bhxh:24000,connhan:1671390},{id:'0046',name:'DIN KHON',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:813200,thuong:160000,tong:2091200,tongTruKT:2091200,chenhKT:0,tamung:300000,thueTNCN:47380,bhxh:24000,connhan:1719820},{id:'0047',name:'SAO MARY',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:622400,thuong:160000,tong:1900400,tongTruKT:1900400,chenhKT:0,tamung:300000,thueTNCN:45500,bhxh:24000,connhan:1530900},{id:'0048',name:'UN SINOEURN',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:449600,thuong:0,tong:1727600,tongTruKT:1727600,chenhKT:0,tamung:300000,thueTNCN:30670,bhxh:24000,connhan:1372930},{id:'0049',name:'HONG SENG HAI',hang:'C',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:457200,thuong:0,tong:1735200,tongTruKT:1654540,chenhKT:-80660,tamung:300000,thueTNCN:31120,bhxh:24000,connhan:1299420},{id:'0050',name:'SEANG DARY',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:746400,thuong:160000,tong:2024400,tongTruKT:2024400,chenhKT:0,tamung:300000,thueTNCN:56220,bhxh:24000,connhan:1644180},{id:'0051',name:'CHEN SOKLY',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:527600,thuong:160000,tong:1805600,tongTruKT:1805600,chenhKT:0,tamung:300000,thueTNCN:43110,bhxh:24000,connhan:1438490},{id:'0052',name:'LORN SREYNEAT',hang:'C',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:527600,thuong:160000,tong:1805600,tongTruKT:1721420,chenhKT:-84180,tamung:300000,thueTNCN:43110,bhxh:24000,connhan:1354310},{id:'0053',name:'UONG PHA',hang:'D',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:615600,thuong:0,tong:1893600,tongTruKT:1716440,chenhKT:-177160,tamung:300000,thueTNCN:35184,bhxh:24000,connhan:1357256},{id:'0054',name:'YOEUN CHANNY',hang:'C',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:525200,thuong:0,tong:1803200,tongTruKT:1719140,chenhKT:-84060,tamung:300000,thueTNCN:48460,bhxh:24000,connhan:1346680},{id:'0055',name:'SRUM SREY ROTH',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:733200,thuong:0,tong:2011200,tongTruKT:2011200,chenhKT:0,tamung:300000,thueTNCN:62770,bhxh:24000,connhan:1624430},{id:'0056',name:'KIHEANG',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:560800,thuong:160000,tong:1838800,tongTruKT:1838800,chenhKT:0,tamung:300000,thueTNCN:37110,bhxh:24000,connhan:1477690},{id:'0057',name:'KHON OUN',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:532000,thuong:160000,tong:1810000,tongTruKT:1810000,chenhKT:0,tamung:300000,thueTNCN:43150,bhxh:24000,connhan:1442850},{id:'0058',name:'SAMNANG NOEUN',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:937600,thuong:160000,tong:2215600,tongTruKT:2215600,chenhKT:0,tamung:300000,thueTNCN:76200,bhxh:24000,connhan:1815400},{id:'0059',name:'SAT SRUN',hang:'C',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:396000,thuong:160000,tong:1674000,tongTruKT:1596400,chenhKT:-77600,tamung:300000,thueTNCN:22600,bhxh:24000,connhan:1249800},{id:'0060',name:'BOU SAVAI',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:575200,thuong:320000,tong:1853200,tongTruKT:1853200,chenhKT:0,tamung:300000,thueTNCN:41790,bhxh:24000,connhan:1487410},{id:'0061',name:'SRON SREY NEA',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:309600,thuong:160000,tong:1587600,tongTruKT:1587600,chenhKT:0,tamung:300000,thueTNCN:22040,bhxh:24000,connhan:1241560},{id:'0062',name:'HUON HEA',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:590000,thuong:0,tong:1868000,tongTruKT:1868000,chenhKT:0,tamung:300000,thueTNCN:45820,bhxh:24000,connhan:1498180},{id:'0063',name:'LE THOEUN',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:664400,thuong:0,tong:1942400,tongTruKT:1942400,chenhKT:0,tamung:300000,thueTNCN:37390,bhxh:24000,connhan:1581010},{id:'0064',name:'HING NORA',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:448400,thuong:0,tong:1726400,tongTruKT:1726400,chenhKT:0,tamung:300000,thueTNCN:27040,bhxh:24000,connhan:1375360},{id:'0065',name:'CHHUM SAM OL',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:484000,thuong:240000,tong:1762000,tongTruKT:1762000,chenhKT:0,tamung:300000,thueTNCN:19145,bhxh:24000,connhan:1418855},{id:'0066',name:'SOY SOKLY',hang:'C',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:603200,thuong:160000,tong:1881200,tongTruKT:1793240,chenhKT:-87960,tamung:300000,thueTNCN:50180,bhxh:24000,connhan:1419060},{id:'0067',name:'SAYUY LONG',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:345600,thuong:240000,tong:1623600,tongTruKT:1623600,chenhKT:0,tamung:300000,thueTNCN:21580,bhxh:24000,connhan:1278020},{id:'0068',name:'HOEUN RITHY',hang:'A',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:690000,thuong:160000,tong:1968000,tongTruKT:2060300,chenhKT:92300,tamung:300000,thueTNCN:41750,bhxh:24000,connhan:1694550},{id:'0069',name:'CHHUM TROEB',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:665200,thuong:160000,tong:1943200,tongTruKT:1943200,chenhKT:0,tamung:300000,thueTNCN:55660,bhxh:24000,connhan:1563540},{id:'0070',name:'KHENG SOK HENG',hang:'A',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:509600,thuong:0,tong:1787600,tongTruKT:1870880,chenhKT:83280,tamung:300000,thueTNCN:30282,bhxh:24000,connhan:1516598},{id:'0071',name:'THET SITHORN',hang:'D',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:284400,thuong:240000,tong:1562400,tongTruKT:1418360,chenhKT:-144040,tamung:300000,thueTNCN:21220,bhxh:24000,connhan:1073140},{id:'0072',name:'PANN PHALLA',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:528800,thuong:160000,tong:1806800,tongTruKT:1806800,chenhKT:0,tamung:300000,thueTNCN:28574,bhxh:24000,connhan:1454226},{id:'0073',name:'TO SREYCHIT',hang:'C',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:278000,thuong:0,tong:1556000,tongTruKT:1484300,chenhKT:-71700,tamung:300000,thueTNCN:20460,bhxh:24000,connhan:1139840},{id:'0074',name:'HEANG LAYHONG',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:453200,thuong:160000,tong:1731200,tongTruKT:1731200,chenhKT:0,tamung:300000,thueTNCN:24080,bhxh:24000,connhan:1383120},{id:'0075',name:'THOUERN BROEMBREY',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:604000,thuong:160000,tong:1882000,tongTruKT:1882000,chenhKT:0,tamung:300000,thueTNCN:38990,bhxh:24000,connhan:1519010},{id:'0076',name:'KHENG SENGHON',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:771200,thuong:0,tong:2049200,tongTruKT:2049200,chenhKT:0,tamung:300000,thueTNCN:37030,bhxh:24000,connhan:1688170},{id:'0077',name:'SEAN SRORN',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:604400,thuong:80000,tong:1882400,tongTruKT:1882400,chenhKT:0,tamung:300000,thueTNCN:35032,bhxh:24000,connhan:1523368},{id:'0078',name:'VOEURN SREYNY',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:774800,thuong:0,tong:2052800,tongTruKT:2052800,chenhKT:0,tamung:300000,thueTNCN:70770,bhxh:24000,connhan:1658030},{id:'0209',name:'SENG BUNLEAP',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:656800,thuong:0,tong:1934800,tongTruKT:1934800,chenhKT:0,tamung:300000,thueTNCN:44780,bhxh:24000,connhan:1566020},{id:'0210',name:'TRY CHANROEUN',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:303200,thuong:320000,tong:1581200,tongTruKT:1581200,chenhKT:0,tamung:300000,thueTNCN:17605,bhxh:24000,connhan:1239595},{id:'0211',name:'EK AT',hang:'C',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:421600,thuong:240000,tong:1699600,tongTruKT:1620720,chenhKT:-78880,tamung:300000,thueTNCN:15180,bhxh:24000,connhan:1281540},{id:'0212',name:'PHA LEN',hang:'D',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:514000,thuong:320000,tong:1792000,tongTruKT:1625000,chenhKT:-167000,tamung:300000,thueTNCN:28160,bhxh:24000,connhan:1272840},{id:'0235',name:'KY KONG KEA',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:222400,thuong:0,tong:1500400,tongTruKT:1500400,chenhKT:0,tamung:300000,thueTNCN:13225,bhxh:24000,connhan:1163175},{id:'0236',name:'RA MECH',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:245200,thuong:80000,tong:1523200,tongTruKT:1523200,chenhKT:0,tamung:300000,thueTNCN:16425,bhxh:24000,connhan:1182775},{id:'0237',name:'KHOEUN SREYVO',hang:'D',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:242400,thuong:0,tong:1520400,tongTruKT:1380560,chenhKT:-139840,tamung:300000,thueTNCN:18345,bhxh:24000,connhan:1038215},{id:'0238',name:'LE NUOI',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:276800,thuong:0,tong:1554800,tongTruKT:1554800,chenhKT:0,tamung:300000,thueTNCN:12945,bhxh:24000,connhan:1217855},{id:'0239',name:'HON PISEY',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:318400,thuong:0,tong:1596400,tongTruKT:1596400,chenhKT:0,tamung:300000,thueTNCN:10392,bhxh:24000,connhan:1262008},{id:'0240',name:'SARON SAL',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:261600,thuong:0,tong:1539600,tongTruKT:1539600,chenhKT:0,tamung:300000,thueTNCN:15305,bhxh:24000,connhan:1200295},{id:'0241',name:'YAN CHHON',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:291600,thuong:0,tong:1569600,tongTruKT:1569600,chenhKT:0,tamung:300000,thueTNCN:14305,bhxh:24000,connhan:1231295},{id:'0242',name:'CHHAY MITHHKNA',hang:'B',dongia:40000,congcoso:1020000,phucap:90000,sl240:336000,sl400:684400,thuong:80000,tong:2170400,tongTruKT:2170400,chenhKT:0,tamung:300000,thueTNCN:57750,bhxh:24000,connhan:1788650},{id:'0243',name:'VIN NARIN',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:230800,thuong:80000,tong:1508800,tongTruKT:1508800,chenhKT:0,tamung:300000,thueTNCN:7637,bhxh:24000,connhan:1177163},{id:'0262',name:'NUON HON',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:264000,thuong:0,tong:1542000,tongTruKT:1542000,chenhKT:0,tamung:300000,thueTNCN:14505,bhxh:24000,connhan:1203495},{id:'0266',name:'KHOEURN RITHY',hang:'B',dongia:32000,congcoso:820000,phucap:90000,sl240:336000,sl400:331600,thuong:0,tong:1609600,tongTruKT:1609600,chenhKT:0,tamung:300000,thueTNCN:18125,bhxh:24000,connhan:1267475}];
+const HANGCOL={'A':'#3fb950','B':'#58a6ff','C':'#d29922','D':'#f85149'};
+function ccOf(d){return d.dongia+d.congcoso+d.phucap} // Chuyên cần: lương theo ngày công + phụ cấp cố định
+function ktOf(d){return d.thuong+d.chenhKT} // Kỹ thuật: thưởng hạng KT + điều chỉnh theo hạng KT
+function slOf(d){return d.sl240+d.sl400} // Tổng sản lượng mủ đông chén (240r + 400r)
+function fmtR(n){if(!n&&n!==0)return'—';return Math.round(n).toLocaleString('vi-VN')}
+function fmtK(n){if(!n)return'0';if(Math.abs(n)>=1e6)return(n/1e6).toFixed(1)+'M';if(Math.abs(n)>=1000)return(n/1000).toFixed(0)+'K';return Math.round(n).toLocaleString('vi-VN')}
+function pct(n){return(n*100).toFixed(1)+'%'}
+function sn(name){const p=name.split(' ');return p.length>1?p[0]+' '+p[p.length-1]:name}
+let ktCharts={};
+function ktKill(id){if(ktCharts[id]){ktCharts[id].destroy();delete ktCharts[id]}}
+
+function ktGetFiltered(){
+  const hang=document.getElementById('kt-selKT').value;
+  const nhom=document.getElementById('kt-selNhom').value;
+  const kw=(document.getElementById('kt-selSearch')?.value||'').trim().toLowerCase();
+  return KT_RAW.filter(d=>{
+    if(hang!=='all'&&d.hang!==hang)return false;
+    if(nhom==='cao'&&d.tong<2000000)return false;
+    if(nhom==='tb'&&(d.tong<1200000||d.tong>=2000000))return false;
+    if(nhom==='thap'&&d.tong>=1200000)return false;
+    if(kw&&!(d.name.toLowerCase().includes(kw)||d.id.includes(kw)))return false;
+    return true;
+  });
+}
+
+function ktRender(){
+  const data=ktGetFiltered();
+  const n=data.length||1;
+  const nReal=data.length;
+  document.getElementById('kt-countTag').textContent=nReal+' CN';
+  document.getElementById('kt-tbTag').textContent=nReal+' công nhân';
+  const tl=data.reduce((s,d)=>s+d.tong,0);
+  const avgCC=data.reduce((s,d)=>s+ccOf(d),0)/n;
+  const avgSL240=data.reduce((s,d)=>s+d.sl240,0)/n;
+  const avgSL400=data.reduce((s,d)=>s+d.sl400,0)/n;
+  const avgKT=data.reduce((s,d)=>s+ktOf(d),0)/n;
+  document.getElementById('kk-CN').textContent=nReal;
+  document.getElementById('kk-TL').textContent=fmtK(tl);
+  document.getElementById('kk-CC').textContent=fmtK(avgCC);
+  document.getElementById('kk-SL').textContent=fmtK(avgSL240);
+  document.getElementById('kk-HS').textContent=fmtK(avgSL400);
+  document.getElementById('kk-KT').textContent=(avgKT>=0?'+':'')+fmtK(avgKT);
+
+  // Chart 1 — Stacked bar: Cơ cấu lương top 20 CN (Chuyên cần, SL 240r, SL 400r, Kỹ thuật +/-)
+  ktKill('coCau');
+  const sd=[...data].sort((a,b)=>b.tong-a.tong).slice(0,20);
+  ktCharts.coCau=new Chart(document.getElementById('kt-cCoCau'),{type:'bar',
+    data:{labels:sd.map(d=>sn(d.name)),datasets:[
+      {label:'Chuyên cần',data:sd.map(d=>ccOf(d)),backgroundColor:'rgba(88,166,255,.8)',borderWidth:0},
+      {label:'SL mủ 240r',data:sd.map(d=>d.sl240),backgroundColor:'rgba(63,185,80,.8)',borderWidth:0},
+      {label:'SL mủ 400r',data:sd.map(d=>d.sl400),backgroundColor:'rgba(82,230,160,.85)',borderWidth:0},
+      {label:'Kỹ thuật (+)',data:sd.map(d=>Math.max(0,ktOf(d))),backgroundColor:'rgba(188,140,255,.8)',borderWidth:0},
+      {label:'Kỹ thuật (-)',data:sd.map(d=>Math.min(0,ktOf(d))),backgroundColor:'rgba(248,81,73,.7)',borderWidth:0},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmtR(c.raw)} Riel`}}},
+      scales:{
+        x:{stacked:true,ticks:{color:'#8b949e',font:{size:8},maxRotation:45},grid:{color:'#21262d'}},
+        y:{stacked:true,ticks:{color:'#8b949e',font:{size:9},callback:v=>(v/1000).toFixed(0)+'K'},grid:{color:'#21262d'}}
+      }
+    }
+  });
+
+  // Chart 2 — Donut: Cơ cấu quỹ lương toàn đơn vị (Chuyên cần / SL 240r / SL 400r / Kỹ thuật)
+  ktKill('cDonut');
+  const totCC2=data.reduce((s,d)=>s+ccOf(d),0);
+  const totSL240=data.reduce((s,d)=>s+d.sl240,0);
+  const totSL400=data.reduce((s,d)=>s+d.sl400,0);
+  const totKT2=Math.max(0,data.reduce((s,d)=>s+ktOf(d),0));
+  const tot=totCC2+totSL240+totSL400+totKT2||1;
+  ktCharts.cDonut=new Chart(document.getElementById('kt-cDonut'),{type:'doughnut',
+    data:{labels:['Chuyên cần','SL mủ 240r','SL mủ 400r','Kỹ thuật'],
+      datasets:[{data:[totCC2,totSL240,totSL400,totKT2],backgroundColor:['rgba(88,166,255,.8)','rgba(63,185,80,.8)','rgba(82,230,160,.85)','rgba(188,140,255,.8)'],borderColor:'#161b22',borderWidth:3,hoverOffset:8}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmtK(c.raw)} Riel (${pct(c.raw/tot)})`}}}}
+  });
+  document.getElementById('kt-donutLeg').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:5px;padding:0 2px">
+      <div class="kl-i"><span class="kl-d" style="background:#58a6ff"></span>Chuyên cần: ${pct(totCC2/tot)}</div>
+      <div class="kl-i"><span class="kl-d" style="background:#3fb950"></span>SL mủ 240r: ${pct(totSL240/tot)}</div>
+      <div class="kl-i"><span class="kl-d" style="background:#52e6a0"></span>SL mủ 400r: ${pct(totSL400/tot)}</div>
+      <div class="kl-i"><span class="kl-d" style="background:#bc8cff"></span>Kỹ thuật: ${pct(totKT2/tot)}</div>
+    </div>`;
+
+  // Chart 3 — Lương trung bình theo hạng kỹ thuật (stacked bar)
+  ktKill('cHS');
+  const hangOrder=['A','B','C','D'];
+  const byHang=hangOrder.map(h=>{
+    const hd=data.filter(d=>d.hang===h);
+    const m=hd.length||1;
+    return{h,cc:hd.reduce((s,d)=>s+ccOf(d),0)/m,sl240:hd.reduce((s,d)=>s+d.sl240,0)/m,sl400:hd.reduce((s,d)=>s+d.sl400,0)/m,kt:hd.reduce((s,d)=>s+ktOf(d),0)/m,n:hd.length};
+  });
+  ktCharts.cHS=new Chart(document.getElementById('kt-cHS'),{type:'bar',
+    data:{labels:byHang.map(d=>'Hạng '+d.h+' ('+d.n+' CN)'),datasets:[
+      {label:'Chuyên cần',data:byHang.map(d=>Math.round(d.cc)),backgroundColor:'rgba(88,166,255,.8)',stack:'s'},
+      {label:'SL mủ 240r',data:byHang.map(d=>Math.round(d.sl240)),backgroundColor:'rgba(63,185,80,.8)',stack:'s'},
+      {label:'SL mủ 400r',data:byHang.map(d=>Math.round(d.sl400)),backgroundColor:'rgba(82,230,160,.85)',stack:'s'},
+      {label:'Kỹ thuật',data:byHang.map(d=>Math.round(d.kt)),backgroundColor:'rgba(188,140,255,.8)',stack:'s'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'#8b949e',font:{size:9},boxWidth:10}}},
+      scales:{
+        x:{stacked:true,ticks:{color:'#8b949e',font:{size:9}},grid:{color:'#21262d'}},
+        y:{stacked:true,ticks:{color:'#8b949e',font:{size:9},callback:v=>(v/1000).toFixed(0)+'K'},grid:{color:'#21262d'}}
+      }
+    }
+  });
+
+  // Rank dist (phân bố hạng kỹ thuật)
+  const rc={};hangOrder.forEach(r=>rc[r]=0);
+  data.forEach(d=>{if(rc[d.hang]!==undefined)rc[d.hang]++});
+  const mx=Math.max(...Object.values(rc),1);
+  document.getElementById('kt-rankDist').innerHTML=hangOrder.map(r=>`
+    <div class="rrow">
+      <div class="rlbl" style="color:${HANGCOL[r]}">${r}</div>
+      <div class="rtrack"><div class="rbar" style="width:${rc[r]/mx*100}%;background:${HANGCOL[r]}bf;color:#fff">${rc[r]>0?rc[r]+' CN':''}</div></div>
+      <div class="rcnt" style="color:${HANGCOL[r]}">${rc[r]}</div>
+    </div>`).join('');
+
+  // Chart 4 — Scatter: SL mủ 400r (vượt định mức) vs Tổng lương, màu theo hạng
+  ktKill('cScatter');
+  const sp=data.map(d=>({x:d.sl400,y:d.tong,r:Math.max(3,Math.min(14,d.sl240/50000+3)),name:sn(d.name),tong:d.tong,hang:d.hang,sl240:d.sl240}));
+  ktCharts.cScatter=new Chart(document.getElementById('kt-cScatter'),{type:'bubble',
+    data:{datasets:[{label:'CN',data:sp,backgroundColor:sp.map(p=>HANGCOL[p.hang]+'66'),borderColor:sp.map(p=>HANGCOL[p.hang]),borderWidth:1}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:p=>{const d=p.raw;return[`${d.name} (Hạng ${d.hang})`,`SL mủ 400r: ${fmtK(d.x)} Riel`,`SL mủ 240r: ${fmtK(d.sl240)} Riel`,`Tổng lương: ${fmtK(d.tong)} Riel`]}}}},
+      scales:{
+        x:{title:{display:true,text:'SL mủ 400r (Riel)',color:'#8b949e',font:{size:9}},ticks:{color:'#8b949e',font:{size:8},callback:v=>(v/1000).toFixed(0)+'K'},grid:{color:'#21262d'}},
+        y:{title:{display:true,text:'Tổng lương (Riel)',color:'#8b949e',font:{size:9}},ticks:{color:'#8b949e',font:{size:8},callback:v=>(v/1000).toFixed(0)+'K'},grid:{color:'#21262d'}}
+      }
+    }
+  });
+
+  // Chart 5 — Top 20 tổng lương
+  ktKill('cTop');
+  const td=[...data].sort((a,b)=>b.tong-a.tong).slice(0,20);
+  ktCharts.cTop=new Chart(document.getElementById('kt-cTop'),{type:'bar',
+    data:{labels:td.map(d=>sn(d.name)),datasets:[{label:'Tổng lương',data:td.map(d=>d.tong),backgroundColor:td.map(d=>HANGCOL[d.hang]+'cc'),borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${fmtR(c.raw)} Riel · Hạng ${td[c.dataIndex].hang}`}}},
+      scales:{
+        x:{ticks:{color:'#8b949e',font:{size:8},callback:v=>(v/1000).toFixed(0)+'K'},grid:{color:'#21262d'}},
+        y:{ticks:{color:'#8b949e',font:{size:8}},grid:{color:'#21262d'}}
+      }
+    }
+  });
+
+  // Hạng grid (thay cho KV grid — không có dữ liệu khu vực trong Excel gốc)
+  document.getElementById('kt-kvGrid').innerHTML=byHang.map(d=>{
+    const hd=data.filter(x=>x.hang===d.h);
+    const tongHang=hd.reduce((s,x)=>s+x.tong,0);
+    return `<div class="kv-card">
+      <div class="kv-name">Hạng ${d.h}</div><div class="kv-cn">${d.n} CN</div>
+      <div class="kv-hs" style="color:${HANGCOL[d.h]}">${fmtK(tongHang)} Riel</div>
+    </div>`;
+  }).join('');
+
+  // Table
+  const sorted=[...data].sort((a,b)=>b.tong-a.tong);
+  document.getElementById('kt-tbody').innerHTML=sorted.map(d=>{
+    const bCls=d.hang==='A'?'bA':d.hang==='B'?'bB':d.hang==='C'?'bC':'bD';
+    const khauTru=d.tamung+d.thueTNCN+d.bhxh;
+    const kt=ktOf(d);
+    return `<tr>
+      <td class="mono" style="color:var(--t2);font-size:10px">${d.id}</td>
+      <td style="font-weight:500;font-size:11px">${d.name}</td>
+      <td style="text-align:center"><span class="bx ${bCls}">${d.hang}</span></td>
+      <td class="nr">${fmtR(ccOf(d))}</td>
+      <td class="nr" style="color:var(--grn)">${fmtR(d.sl240)}</td>
+      <td class="nr" style="color:#52e6a0">${fmtR(d.sl400)}</td>
+      <td class="nr" style="color:${kt<0?'var(--red2)':'#bc8cff'}">${kt>0?'+':''}${fmtR(kt)}</td>
+      <td class="nr" style="font-weight:700">${fmtR(d.tong)}</td>
+      <td class="nr" style="color:var(--red2)">-${fmtR(khauTru)}</td>
+      <td class="nr" style="font-weight:700;color:var(--grn)">${fmtR(d.connhan)}</td>
+    </tr>`;
+  }).join('');
+}
+function ktInit(){
+  ['kt-selKT','kt-selNhom'].forEach(id=>document.getElementById(id).addEventListener('change',ktRender));
+  document.getElementById('kt-selSearch').addEventListener('input',ktRender);
+  Chart.defaults.color='#8b949e'; Chart.defaults.font.family="'Inter',sans-serif";
+  ktRender();
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// ██  PAGE 3 — CSVC DATA & LOGIC
+// ═══════════════════════════════════════════════════════════
+const DG=34000; // đơn giá công CSVC, Riel/công
+const KH_CS=[
+  {ma:'CSVC_KT_PB',nd:'Phòng trị bệnh',doi:'A',lo:'39',dm:17,dt:9.64,cong:163.88,tt:5572000},
+  {ma:'CSVC_KT_PPBPT',nd:'Phun phòng bệnh phấn trắng',doi:'B',lo:'98',dm:10,dt:5.05,cong:50.5,tt:1717000},
+  {ma:'CSVC_KT_PCC',nd:'Phun cỏ caro (8 đường)',doi:'C',lo:'99',dm:19,dt:7.77,cong:147.63,tt:5019000},
+  {ma:'CSVC_KT_BMLX',nd:'Bốc mủ lên xe xuất bán',doi:'D',lo:'129',dm:8,dt:2.49,cong:19.92,tt:677000},
+  {ma:'CSVC_KT_CHC',nd:'Công hạ cạo',doi:'A',lo:'38',dm:7,dt:22.3,cong:156.1,tt:5307000},
+  {ma:'CSVC_KT_CHC2',nd:'Công hạ cạo',doi:'B',lo:'67',dm:7,dt:6.34,cong:44.38,tt:1509000},
+  {ma:'CSVC_CB_PB',nd:'Phun phòng trị bệnh',doi:'C',lo:'68',dm:8,dt:11.39,cong:91.12,tt:3098000},
+  {ma:'CSVC_CB_PB2',nd:'Phun phòng trị bệnh',doi:'D',lo:'130',dm:8,dt:7.35,cong:58.8,tt:1999000},
+  {ma:'CSVC_CB_KKCN',nd:'Kiểm kê đánh giá cuối năm',doi:'A',lo:'160',dm:15,dt:14.71,cong:220.65,tt:7502000},
+  {ma:'CSVC_KT_BMCK',nd:'Bốc mủ chuyển kho',doi:'B',lo:'247',dm:18,dt:17.45,cong:314.1,tt:10679000},
+];
+const CNRAW=[
+  {ten:'HENG SOVANNARA',doi:'A',lo:'39',ma:'CSVC_KT_PB',nd:'Phòng trị bệnh',dm:17,thang:2,dt_g:0.96,dt_nt:0.96,dt_pt:0.96},
+  {ten:'CHEA SREYNETH',doi:'A',lo:'39',ma:'CSVC_KT_PB',nd:'Phòng trị bệnh',dm:17,thang:2,dt_g:0.96,dt_nt:0.85,dt_pt:0.80},
+  {ten:'MEAS SOKUNTHEA',doi:'A',lo:'39',ma:'CSVC_KT_PB',nd:'Phòng trị bệnh',dm:17,thang:2,dt_g:0.96,dt_nt:0.96,dt_pt:0.90},
+  {ten:'PRUM DAVY',doi:'A',lo:'39',ma:'CSVC_KT_PB',nd:'Phòng trị bệnh',dm:17,thang:2,dt_g:0.96,dt_nt:0.60,dt_pt:0.55},
+  {ten:'SOK CHANLINA',doi:'A',lo:'39',ma:'CSVC_KT_PB',nd:'Phòng trị bệnh',dm:17,thang:2,dt_g:0.96,dt_nt:0.96,dt_pt:0.96},
+  {ten:'VONG PISETH',doi:'A',lo:'39',ma:'CSVC_KT_PB',nd:'Phòng trị bệnh',dm:17,thang:2,dt_g:0.96,dt_nt:0.70,dt_pt:0.65},
+  {ten:'THY SOPHAL',doi:'A',lo:'39',ma:'CSVC_KT_PB',nd:'Phòng trị bệnh',dm:17,thang:2,dt_g:0.96,dt_nt:0.96,dt_pt:0.88},
+  {ten:'ROS CHENDA',doi:'A',lo:'39',ma:'CSVC_KT_PB',nd:'Phòng trị bệnh',dm:17,thang:2,dt_g:0.96,dt_nt:0.96,dt_pt:0.96},
+  {ten:'KHUON VUTHY',doi:'A',lo:'39',ma:'CSVC_KT_PB',nd:'Phòng trị bệnh',dm:17,thang:2,dt_g:0.96,dt_nt:0.40,dt_pt:0.40},
+  {ten:'SAR RATANAK',doi:'A',lo:'39',ma:'CSVC_KT_PB',nd:'Phòng trị bệnh',dm:17,thang:2,dt_g:1.00,dt_nt:1.00,dt_pt:1.00},
+  {ten:'NOP SAMBATH',doi:'B',lo:'98',ma:'CSVC_KT_PPBPT',nd:'Phun phòng bệnh phấn trắng',dm:10,thang:3,dt_g:0.51,dt_nt:0.51,dt_pt:0.51},
+  {ten:'KIM SREYLEAK',doi:'B',lo:'98',ma:'CSVC_KT_PPBPT',nd:'Phun phòng bệnh phấn trắng',dm:10,thang:3,dt_g:0.51,dt_nt:0.30,dt_pt:0.28},
+  {ten:'CHAN VIRAK',doi:'B',lo:'98',ma:'CSVC_KT_PPBPT',nd:'Phun phòng bệnh phấn trắng',dm:10,thang:3,dt_g:0.51,dt_nt:0.51,dt_pt:0.45},
+  {ten:'LY SOPHEAK',doi:'B',lo:'98',ma:'CSVC_KT_PPBPT',nd:'Phun phòng bệnh phấn trắng',dm:10,thang:3,dt_g:0.51,dt_nt:0.00,dt_pt:0.00},
+  {ten:'DARA PISEY',doi:'B',lo:'98',ma:'CSVC_KT_PPBPT',nd:'Phun phòng bệnh phấn trắng',dm:10,thang:3,dt_g:0.51,dt_nt:0.51,dt_pt:0.51},
+  {ten:'OUM SREYMOM',doi:'B',lo:'98',ma:'CSVC_KT_PPBPT',nd:'Phun phòng bệnh phấn trắng',dm:10,thang:3,dt_g:0.50,dt_nt:0.50,dt_pt:0.50},
+  {ten:'SENG BUNTHOEUN',doi:'B',lo:'98',ma:'CSVC_KT_PPBPT',nd:'Phun phòng bệnh phấn trắng',dm:10,thang:3,dt_g:0.50,dt_nt:0.35,dt_pt:0.30},
+  {ten:'PECH SOKHA',doi:'B',lo:'98',ma:'CSVC_KT_PPBPT',nd:'Phun phòng bệnh phấn trắng',dm:10,thang:3,dt_g:0.50,dt_nt:0.50,dt_pt:0.48},
+  {ten:'HANG CHANDARA',doi:'B',lo:'98',ma:'CSVC_KT_PPBPT',nd:'Phun phòng bệnh phấn trắng',dm:10,thang:3,dt_g:0.50,dt_nt:0.50,dt_pt:0.50},
+  {ten:'MOM SREYPICH',doi:'B',lo:'98',ma:'CSVC_KT_PPBPT',nd:'Phun phòng bệnh phấn trắng',dm:10,thang:3,dt_g:0.50,dt_nt:0.20,dt_pt:0.18},
+  {ten:'KEO VANNAK',doi:'C',lo:'99',ma:'CSVC_KT_PCC',nd:'Phun cỏ caro (8 đường)',dm:19,thang:4,dt_g:0.77,dt_nt:0.77,dt_pt:0.77},
+  {ten:'NHEM CHANTHOU',doi:'C',lo:'99',ma:'CSVC_KT_PCC',nd:'Phun cỏ caro (8 đường)',dm:19,thang:4,dt_g:0.77,dt_nt:0.77,dt_pt:0.70},
+  {ten:'UN PANHA',doi:'C',lo:'99',ma:'CSVC_KT_PCC',nd:'Phun cỏ caro (8 đường)',dm:19,thang:4,dt_g:0.77,dt_nt:0.60,dt_pt:0.55},
+  {ten:'SOEUNG SREYNICH',doi:'C',lo:'99',ma:'CSVC_KT_PCC',nd:'Phun cỏ caro (8 đường)',dm:19,thang:4,dt_g:0.77,dt_nt:0.77,dt_pt:0.77},
+  {ten:'PHAL SOKHOM',doi:'C',lo:'99',ma:'CSVC_KT_PCC',nd:'Phun cỏ caro (8 đường)',dm:19,thang:4,dt_g:0.77,dt_nt:0.77,dt_pt:0.75},
+  {ten:'IM RITHISAK',doi:'C',lo:'99',ma:'CSVC_KT_PCC',nd:'Phun cỏ caro (8 đường)',dm:19,thang:4,dt_g:0.77,dt_nt:0.50,dt_pt:0.45},
+  {ten:'TITH SREYMAO',doi:'C',lo:'99',ma:'CSVC_KT_PCC',nd:'Phun cỏ caro (8 đường)',dm:19,thang:4,dt_g:0.77,dt_nt:0.77,dt_pt:0.77},
+  {ten:'CHET BORA',doi:'C',lo:'99',ma:'CSVC_KT_PCC',nd:'Phun cỏ caro (8 đường)',dm:19,thang:4,dt_g:0.77,dt_nt:0.77,dt_pt:0.77},
+  {ten:'LOR VANNA',doi:'C',lo:'99',ma:'CSVC_KT_PCC',nd:'Phun cỏ caro (8 đường)',dm:19,thang:4,dt_g:0.77,dt_nt:0.30,dt_pt:0.25},
+  {ten:'KAO CHANNY',doi:'C',lo:'99',ma:'CSVC_KT_PCC',nd:'Phun cỏ caro (8 đường)',dm:19,thang:4,dt_g:0.77,dt_nt:0.77,dt_pt:0.77},
+  {ten:'EM SOVANNAK',doi:'D',lo:'129',ma:'CSVC_KT_BMLX',nd:'Bốc mủ lên xe xuất bán',dm:8,thang:5,dt_g:0.25,dt_nt:0.25,dt_pt:0.25},
+  {ten:'SREY MONYPICH',doi:'D',lo:'129',ma:'CSVC_KT_BMLX',nd:'Bốc mủ lên xe xuất bán',dm:8,thang:5,dt_g:0.25,dt_nt:0.18,dt_pt:0.15},
+  {ten:'PHAN DARAVUTH',doi:'D',lo:'129',ma:'CSVC_KT_BMLX',nd:'Bốc mủ lên xe xuất bán',dm:8,thang:5,dt_g:0.25,dt_nt:0.00,dt_pt:0.00},
+  {ten:'CHIM SOPHANY',doi:'D',lo:'129',ma:'CSVC_KT_BMLX',nd:'Bốc mủ lên xe xuất bán',dm:8,thang:5,dt_g:0.25,dt_nt:0.25,dt_pt:0.22},
+  {ten:'MEY KOSAL',doi:'D',lo:'129',ma:'CSVC_KT_BMLX',nd:'Bốc mủ lên xe xuất bán',dm:8,thang:5,dt_g:0.25,dt_nt:0.25,dt_pt:0.25},
+  {ten:'NUON SREYLEAK',doi:'D',lo:'129',ma:'CSVC_KT_BMLX',nd:'Bốc mủ lên xe xuất bán',dm:8,thang:5,dt_g:0.25,dt_nt:0.25,dt_pt:0.20},
+  {ten:'THAN SAMBO',doi:'D',lo:'129',ma:'CSVC_KT_BMLX',nd:'Bốc mủ lên xe xuất bán',dm:8,thang:5,dt_g:0.25,dt_nt:0.25,dt_pt:0.25},
+  {ten:'YIN CHANNY',doi:'D',lo:'129',ma:'CSVC_KT_BMLX',nd:'Bốc mủ lên xe xuất bán',dm:8,thang:5,dt_g:0.25,dt_nt:0.10,dt_pt:0.08},
+  {ten:'SOTH RATHA',doi:'D',lo:'129',ma:'CSVC_KT_BMLX',nd:'Bốc mủ lên xe xuất bán',dm:8,thang:5,dt_g:0.25,dt_nt:0.25,dt_pt:0.25},
+  {ten:'HORT SREYPOV',doi:'D',lo:'129',ma:'CSVC_KT_BMLX',nd:'Bốc mủ lên xe xuất bán',dm:8,thang:5,dt_g:0.24,dt_nt:0.24,dt_pt:0.20},
+  {ten:'HENG SOVANNARA',doi:'A',lo:'38',ma:'CSVC_KT_CHC',nd:'Công hạ cạo',dm:7,thang:1,dt_g:2.23,dt_nt:2.23,dt_pt:2.23},
+  {ten:'CHEA SREYNETH',doi:'A',lo:'38',ma:'CSVC_KT_CHC',nd:'Công hạ cạo',dm:7,thang:1,dt_g:2.23,dt_nt:2.00,dt_pt:1.90},
+  {ten:'MEAS SOKUNTHEA',doi:'A',lo:'38',ma:'CSVC_KT_CHC',nd:'Công hạ cạo',dm:7,thang:1,dt_g:2.23,dt_nt:2.23,dt_pt:2.10},
+  {ten:'PRUM DAVY',doi:'A',lo:'38',ma:'CSVC_KT_CHC',nd:'Công hạ cạo',dm:7,thang:1,dt_g:2.23,dt_nt:2.23,dt_pt:2.23},
+  {ten:'SOK CHANLINA',doi:'A',lo:'38',ma:'CSVC_KT_CHC',nd:'Công hạ cạo',dm:7,thang:1,dt_g:2.23,dt_nt:1.50,dt_pt:1.40},
+  {ten:'VONG PISETH',doi:'A',lo:'38',ma:'CSVC_KT_CHC',nd:'Công hạ cạo',dm:7,thang:1,dt_g:2.23,dt_nt:2.23,dt_pt:2.23},
+  {ten:'THY SOPHAL',doi:'A',lo:'38',ma:'CSVC_KT_CHC',nd:'Công hạ cạo',dm:7,thang:1,dt_g:2.23,dt_nt:2.23,dt_pt:2.00},
+  {ten:'ROS CHENDA',doi:'A',lo:'38',ma:'CSVC_KT_CHC',nd:'Công hạ cạo',dm:7,thang:1,dt_g:2.23,dt_nt:2.23,dt_pt:2.23},
+  {ten:'KHUON VUTHY',doi:'A',lo:'38',ma:'CSVC_KT_CHC',nd:'Công hạ cạo',dm:7,thang:1,dt_g:2.23,dt_nt:0.80,dt_pt:0.75},
+  {ten:'SAR RATANAK',doi:'A',lo:'38',ma:'CSVC_KT_CHC',nd:'Công hạ cạo',dm:7,thang:1,dt_g:2.23,dt_nt:2.23,dt_pt:2.23},
+  {ten:'NOP SAMBATH',doi:'B',lo:'67',ma:'CSVC_KT_CHC2',nd:'Công hạ cạo',dm:7,thang:1,dt_g:0.634,dt_nt:0.634,dt_pt:0.634},
+  {ten:'KIM SREYLEAK',doi:'B',lo:'67',ma:'CSVC_KT_CHC2',nd:'Công hạ cạo',dm:7,thang:1,dt_g:0.634,dt_nt:0.400,dt_pt:0.380},
+  {ten:'CHAN VIRAK',doi:'B',lo:'67',ma:'CSVC_KT_CHC2',nd:'Công hạ cạo',dm:7,thang:1,dt_g:0.634,dt_nt:0.634,dt_pt:0.600},
+  {ten:'LY SOPHEAK',doi:'B',lo:'67',ma:'CSVC_KT_CHC2',nd:'Công hạ cạo',dm:7,thang:1,dt_g:0.634,dt_nt:0.634,dt_pt:0.634},
+  {ten:'DARA PISEY',doi:'B',lo:'67',ma:'CSVC_KT_CHC2',nd:'Công hạ cạo',dm:7,thang:1,dt_g:0.634,dt_nt:0.200,dt_pt:0.180},
+  {ten:'OUM SREYMOM',doi:'B',lo:'67',ma:'CSVC_KT_CHC2',nd:'Công hạ cạo',dm:7,thang:1,dt_g:0.634,dt_nt:0.634,dt_pt:0.634},
+  {ten:'SENG BUNTHOEUN',doi:'B',lo:'67',ma:'CSVC_KT_CHC2',nd:'Công hạ cạo',dm:7,thang:1,dt_g:0.634,dt_nt:0.634,dt_pt:0.550},
+  {ten:'PECH SOKHA',doi:'B',lo:'67',ma:'CSVC_KT_CHC2',nd:'Công hạ cạo',dm:7,thang:1,dt_g:0.634,dt_nt:0.500,dt_pt:0.480},
+  {ten:'HANG CHANDARA',doi:'B',lo:'67',ma:'CSVC_KT_CHC2',nd:'Công hạ cạo',dm:7,thang:1,dt_g:0.630,dt_nt:0.630,dt_pt:0.630},
+  {ten:'MOM SREYPICH',doi:'B',lo:'67',ma:'CSVC_KT_CHC2',nd:'Công hạ cạo',dm:7,thang:1,dt_g:0.630,dt_nt:0.630,dt_pt:0.600},
+  {ten:'KEO VANNAK',doi:'C',lo:'68',ma:'CSVC_CB_PB',nd:'Phun phòng trị bệnh',dm:8,thang:6,dt_g:1.14,dt_nt:1.14,dt_pt:1.14},
+  {ten:'NHEM CHANTHOU',doi:'C',lo:'68',ma:'CSVC_CB_PB',nd:'Phun phòng trị bệnh',dm:8,thang:6,dt_g:1.14,dt_nt:0.80,dt_pt:0.72},
+  {ten:'UN PANHA',doi:'C',lo:'68',ma:'CSVC_CB_PB',nd:'Phun phòng trị bệnh',dm:8,thang:6,dt_g:1.14,dt_nt:0.00,dt_pt:0.00},
+  {ten:'SOEUNG SREYNICH',doi:'C',lo:'68',ma:'CSVC_CB_PB',nd:'Phun phòng trị bệnh',dm:8,thang:6,dt_g:1.14,dt_nt:1.14,dt_pt:1.00},
+  {ten:'PHAL SOKHOM',doi:'C',lo:'68',ma:'CSVC_CB_PB',nd:'Phun phòng trị bệnh',dm:8,thang:6,dt_g:1.14,dt_nt:1.14,dt_pt:1.14},
+  {ten:'IM RITHISAK',doi:'C',lo:'68',ma:'CSVC_CB_PB',nd:'Phun phòng trị bệnh',dm:8,thang:6,dt_g:1.14,dt_nt:0.60,dt_pt:0.55},
+  {ten:'TITH SREYMAO',doi:'C',lo:'68',ma:'CSVC_CB_PB',nd:'Phun phòng trị bệnh',dm:8,thang:6,dt_g:1.14,dt_nt:1.14,dt_pt:1.10},
+  {ten:'CHET BORA',doi:'C',lo:'68',ma:'CSVC_CB_PB',nd:'Phun phòng trị bệnh',dm:8,thang:6,dt_g:1.14,dt_nt:1.14,dt_pt:1.14},
+  {ten:'LOR VANNA',doi:'C',lo:'68',ma:'CSVC_CB_PB',nd:'Phun phòng trị bệnh',dm:8,thang:6,dt_g:1.13,dt_nt:0.45,dt_pt:0.40},
+  {ten:'KAO CHANNY',doi:'C',lo:'68',ma:'CSVC_CB_PB',nd:'Phun phòng trị bệnh',dm:8,thang:6,dt_g:1.13,dt_nt:1.13,dt_pt:1.05},
+  {ten:'EM SOVANNAK',doi:'D',lo:'130',ma:'CSVC_CB_PB2',nd:'Phun phòng trị bệnh',dm:8,thang:7,dt_g:0.735,dt_nt:0.735,dt_pt:0.735},
+  {ten:'SREY MONYPICH',doi:'D',lo:'130',ma:'CSVC_CB_PB2',nd:'Phun phòng trị bệnh',dm:8,thang:7,dt_g:0.735,dt_nt:0.500,dt_pt:0.450},
+  {ten:'PHAN DARAVUTH',doi:'D',lo:'130',ma:'CSVC_CB_PB2',nd:'Phun phòng trị bệnh',dm:8,thang:7,dt_g:0.735,dt_nt:0.735,dt_pt:0.700},
+  {ten:'CHIM SOPHANY',doi:'D',lo:'130',ma:'CSVC_CB_PB2',nd:'Phun phòng trị bệnh',dm:8,thang:7,dt_g:0.735,dt_nt:0.300,dt_pt:0.280},
+  {ten:'MEY KOSAL',doi:'D',lo:'130',ma:'CSVC_CB_PB2',nd:'Phun phòng trị bệnh',dm:8,thang:7,dt_g:0.735,dt_nt:0.735,dt_pt:0.735},
+  {ten:'NUON SREYLEAK',doi:'D',lo:'130',ma:'CSVC_CB_PB2',nd:'Phun phòng trị bệnh',dm:8,thang:7,dt_g:0.735,dt_nt:0.735,dt_pt:0.680},
+  {ten:'THAN SAMBO',doi:'D',lo:'130',ma:'CSVC_CB_PB2',nd:'Phun phòng trị bệnh',dm:8,thang:7,dt_g:0.735,dt_nt:0.735,dt_pt:0.735},
+  {ten:'YIN CHANNY',doi:'D',lo:'130',ma:'CSVC_CB_PB2',nd:'Phun phòng trị bệnh',dm:8,thang:7,dt_g:0.735,dt_nt:0.200,dt_pt:0.180},
+  {ten:'SOTH RATHA',doi:'D',lo:'130',ma:'CSVC_CB_PB2',nd:'Phun phòng trị bệnh',dm:8,thang:7,dt_g:0.735,dt_nt:0.735,dt_pt:0.700},
+  {ten:'HORT SREYPOV',doi:'D',lo:'130',ma:'CSVC_CB_PB2',nd:'Phun phòng trị bệnh',dm:8,thang:7,dt_g:0.735,dt_nt:0.735,dt_pt:0.735},
+  {ten:'HENG SOVANNARA',doi:'A',lo:'160',ma:'CSVC_CB_KKCN',nd:'Kiểm kê đánh giá cuối năm',dm:15,thang:11,dt_g:1.47,dt_nt:1.47,dt_pt:1.47},
+  {ten:'CHEA SREYNETH',doi:'A',lo:'160',ma:'CSVC_CB_KKCN',nd:'Kiểm kê đánh giá cuối năm',dm:15,thang:11,dt_g:1.47,dt_nt:1.00,dt_pt:0.90},
+  {ten:'MEAS SOKUNTHEA',doi:'A',lo:'160',ma:'CSVC_CB_KKCN',nd:'Kiểm kê đánh giá cuối năm',dm:15,thang:11,dt_g:1.47,dt_nt:1.47,dt_pt:1.30},
+  {ten:'PRUM DAVY',doi:'A',lo:'160',ma:'CSVC_CB_KKCN',nd:'Kiểm kê đánh giá cuối năm',dm:15,thang:11,dt_g:1.47,dt_nt:0.50,dt_pt:0.45},
+  {ten:'SOK CHANLINA',doi:'A',lo:'160',ma:'CSVC_CB_KKCN',nd:'Kiểm kê đánh giá cuối năm',dm:15,thang:11,dt_g:1.47,dt_nt:1.47,dt_pt:1.47},
+  {ten:'VONG PISETH',doi:'A',lo:'160',ma:'CSVC_CB_KKCN',nd:'Kiểm kê đánh giá cuối năm',dm:15,thang:11,dt_g:1.47,dt_nt:1.20,dt_pt:1.10},
+  {ten:'THY SOPHAL',doi:'A',lo:'160',ma:'CSVC_CB_KKCN',nd:'Kiểm kê đánh giá cuối năm',dm:15,thang:11,dt_g:1.47,dt_nt:1.47,dt_pt:1.20},
+  {ten:'ROS CHENDA',doi:'A',lo:'160',ma:'CSVC_CB_KKCN',nd:'Kiểm kê đánh giá cuối năm',dm:15,thang:11,dt_g:1.47,dt_nt:1.47,dt_pt:1.47},
+  {ten:'KHUON VUTHY',doi:'A',lo:'160',ma:'CSVC_CB_KKCN',nd:'Kiểm kê đánh giá cuối năm',dm:15,thang:11,dt_g:1.47,dt_nt:0.00,dt_pt:0.00},
+  {ten:'SAR RATANAK',doi:'A',lo:'160',ma:'CSVC_CB_KKCN',nd:'Kiểm kê đánh giá cuối năm',dm:15,thang:11,dt_g:1.47,dt_nt:1.47,dt_pt:1.47},
+  {ten:'NOP SAMBATH',doi:'B',lo:'247',ma:'CSVC_KT_BMCK',nd:'Bốc mủ chuyển kho',dm:18,thang:10,dt_g:1.75,dt_nt:1.75,dt_pt:1.75},
+  {ten:'KIM SREYLEAK',doi:'B',lo:'247',ma:'CSVC_KT_BMCK',nd:'Bốc mủ chuyển kho',dm:18,thang:10,dt_g:1.75,dt_nt:1.75,dt_pt:1.60},
+  {ten:'CHAN VIRAK',doi:'B',lo:'247',ma:'CSVC_KT_BMCK',nd:'Bốc mủ chuyển kho',dm:18,thang:10,dt_g:1.75,dt_nt:1.50,dt_pt:1.40},
+  {ten:'LY SOPHEAK',doi:'B',lo:'247',ma:'CSVC_KT_BMCK',nd:'Bốc mủ chuyển kho',dm:18,thang:10,dt_g:1.75,dt_nt:1.75,dt_pt:1.75},
+  {ten:'DARA PISEY',doi:'B',lo:'247',ma:'CSVC_KT_BMCK',nd:'Bốc mủ chuyển kho',dm:18,thang:10,dt_g:1.75,dt_nt:1.75,dt_pt:1.70},
+  {ten:'OUM SREYMOM',doi:'B',lo:'247',ma:'CSVC_KT_BMCK',nd:'Bốc mủ chuyển kho',dm:18,thang:10,dt_g:1.74,dt_nt:1.74,dt_pt:1.74},
+  {ten:'SENG BUNTHOEUN',doi:'B',lo:'247',ma:'CSVC_KT_BMCK',nd:'Bốc mủ chuyển kho',dm:18,thang:10,dt_g:1.74,dt_nt:1.20,dt_pt:1.10},
+  {ten:'PECH SOKHA',doi:'B',lo:'247',ma:'CSVC_KT_BMCK',nd:'Bốc mủ chuyển kho',dm:18,thang:10,dt_g:1.74,dt_nt:1.74,dt_pt:1.65},
+  {ten:'HANG CHANDARA',doi:'B',lo:'247',ma:'CSVC_KT_BMCK',nd:'Bốc mủ chuyển kho',dm:18,thang:10,dt_g:1.74,dt_nt:1.74,dt_pt:1.74},
+  {ten:'MOM SREYPICH',doi:'B',lo:'247',ma:'CSVC_KT_BMCK',nd:'Bốc mủ chuyển kho',dm:18,thang:10,dt_g:1.74,dt_nt:1.74,dt_pt:1.60},
+];
+CNRAW.forEach(r=>{r.cong=Math.round(r.dm*r.dt_pt*100)/100;r.luong=Math.round(r.cong*DG);r.pct=r.dt_g>0?r.dt_pt/r.dt_g:0;});
+
+const fV=v=>v==null?'—':Math.round(v).toLocaleString('vi-VN');
+const fN=(v,d=2)=>Number(v).toLocaleString('vi-VN',{minimumFractionDigits:d,maximumFractionDigits:d});
+const DCOL={A:'#0F3D2E',B:'#52B788',C:'#E9A825',D:'#C1121F'};
+const DBGL={A:'rgba(15,61,46,.8)',B:'rgba(82,183,136,.8)',C:'rgba(233,168,37,.8)',D:'rgba(193,18,31,.8)'};
+let csCharts={};
+function csKill(id){if(csCharts[id]){csCharts[id].destroy();delete csCharts[id]}}
+function hsTag(p){
+  if(p>=0.99)return'<span class="bdg bok">⭐ Xuất sắc</span>';
+  if(p>=0.75)return'<span class="bdg" style="background:#EFF6FF;color:#1D4ED8">✓ Tốt</span>';
+  if(p>=0.5)return'<span class="bdg bwn">⚡ TB</span>';
+  return'<span class="bdg brd2">▼ Yếu</span>';
+}
+
+function csGetFiltered(){
+  const doi=document.getElementById('f-doi').value;
+  const hm=document.getElementById('f-hm').value;
+  const lo=document.getElementById('f-lo').value;
+  const thang=document.getElementById('f-thang').value;
+  let d=CNRAW;
+  if(doi!=='all')d=d.filter(r=>r.doi===doi);
+  if(hm!=='all')d=d.filter(r=>r.nd===hm);
+  if(lo!=='all')d=d.filter(r=>r.lo===lo);
+  if(thang!=='all')d=d.filter(r=>r.thang==+thang);
+  return d;
+}
+function csGetKH(data){
+  const doi=document.getElementById('f-doi').value;
+  const hm=document.getElementById('f-hm').value;
+  const lo=document.getElementById('f-lo').value;
+  let kh=KH_CS;
+  if(doi!=='all')kh=kh.filter(r=>r.doi===doi);
+  if(hm!=='all')kh=kh.filter(r=>r.nd===hm);
+  if(lo!=='all')kh=kh.filter(r=>r.lo===lo);
+  return kh;
+}
+
+function csApplyFilter(){
+  const data=csGetFiltered();
+  const khData=csGetKH(data);
+  const months=document.getElementById('f-thang').value==='all'?'Tất cả tháng':'Tháng '+document.getElementById('f-thang').value;
+  document.getElementById('cs-badge').textContent=`${data.length} bản ghi · ${[...new Set(data.map(r=>r.ten))].length} CN · ${months}`;
+  csRenderKPI(data,khData); csRenderChartCV(khData,data); csRenderProgCV(khData,data); csRenderChartsDoi(data); csRenderTable(data);
+}
+function csReset(){['f-doi','f-hm','f-lo','f-thang'].forEach(id=>document.getElementById(id).value='all');csApplyFilter();}
+
+function csRenderKPI(data,khData){
+  const khL=khData.reduce((s,r)=>s+r.tt,0);
+  const thL=data.reduce((s,r)=>s+r.luong,0);
+  const thC=data.reduce((s,r)=>s+r.cong,0);
+  const khC=khData.reduce((s,r)=>s+r.cong,0);
+  const p=khL>0?thL/khL:1;
+  const conlai=Math.max(0,khL-thL);
+  const cnSet=[...new Set(data.map(r=>r.ten))];
+  const avg=cnSet.length>0?thL/cnSet.length:0;
+  document.getElementById('cs-kpi-row').innerHTML=`
+    <div class="c-kpi b"><div class="c-kl">Quỹ Lương KH</div><div class="c-kv">${(khL/1e6).toFixed(1)}<span class="c-ku"> M Riel</span></div><div class="c-ks">${fN(khC,1)} công KH</div></div>
+    <div class="c-kpi ${p>=0.99?'':'a'}"><div class="c-kl">Luỹ Kế TH</div><div class="c-kv">${(thL/1e6).toFixed(1)}<span class="c-ku"> M Riel</span></div><div class="c-ks">${fN(thC,1)} công TH</div><div class="c-kb ${p>=0.99?'ok':p>=0.7?'wn':'rd'}">${(p*100).toFixed(0)}%</div></div>
+    <div class="c-kpi"><div class="c-kl">Còn Lại</div><div class="c-kv" style="color:${conlai>0?'var(--red)':'var(--g2)'};font-size:17px">${conlai>0?'-':'+'}${(Math.abs(khL-thL)/1e6).toFixed(2)}<span class="c-ku"> M Riel</span></div><div class="c-ks">${conlai>0?'Chưa giải ngân hết':'Đã quyết toán'}</div></div>
+    <div class="c-kpi"><div class="c-kl">Số CN</div><div class="c-kv">${cnSet.length}<span class="c-ku"> CN</span></div><div class="c-ks">${[...new Set(data.map(r=>r.doi))].sort().map(d=>'Đội '+d).join(' · ')}</div></div>
+    <div class="c-kpi a"><div class="c-kl">Lương TB/CN</div><div class="c-kv" style="font-size:17px">${(avg/1e6).toFixed(2)}<span class="c-ku"> M Riel</span></div><div class="c-ks">${fV(Math.round(avg))} Riel</div></div>`;
+}
+function csRenderChartCV(khData,cnData){
+  const labels=khData.map(r=>{const s=r.nd+' (D'+r.doi+')';return s.length>20?s.slice(0,20)+'...':s;});
+  const khTT=khData.map(r=>+(r.tt/1e6).toFixed(2));
+  const thTT=khData.map(r=>+(cnData.filter(c=>c.ma===r.ma).reduce((s,c)=>s+c.luong,0)/1e6).toFixed(2));
+  csKill('barCV');
+  csCharts.barCV=new Chart(document.getElementById('cs-barCV'),{type:'bar',
+    data:{labels,datasets:[
+      {label:'KH',data:khTT,backgroundColor:khData.map(r=>DCOL[r.doi]+'30'),borderColor:khData.map(r=>DCOL[r.doi]),borderWidth:1.5,borderRadius:4},
+      {label:'TH',data:thTT,backgroundColor:khData.map(r=>DBGL[r.doi]),borderRadius:4},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:9},boxWidth:9}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.raw} tr`}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:8}}},y:{ticks:{callback:v=>v+'tr'},grid:{color:'#F3F4F6'}}}}
+  });
+}
+function csRenderProgCV(khData,cnData){
+  const el=document.getElementById('cs-prog-cv'); el.innerHTML='';
+  khData.forEach(r=>{
+    const thC=cnData.filter(c=>c.ma===r.ma).reduce((s,c)=>s+c.cong,0);
+    const p=r.cong>0?Math.min(thC/r.cong,1):1;
+    const pp=(p*100).toFixed(0);
+    const fc=p>=0.99?'pg':p>=0.6?'pa':'pr';
+    el.innerHTML+=`<div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span style="font-size:10px;font-weight:600;color:var(--ink2)">${r.nd} <span style="color:${DCOL[r.doi]};font-weight:700">(D${r.doi})</span></span>
+        <span style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--g2);font-weight:700">${fN(thC,1)}/${fN(r.cong,1)} c · ${pp}%</span>
+      </div>
+      <div class="pt"><div class="pf ${fc}" style="width:${pp}%"></div></div>
+    </div>`;
+  });
+}
+function csRenderChartsDoi(data){
+  const dois=['A','B','C','D'];
+  const cong=dois.map(d=>+data.filter(r=>r.doi===d).reduce((s,r)=>s+r.cong,0).toFixed(1));
+  const luong=dois.map(d=>+(data.filter(r=>r.doi===d).reduce((s,r)=>s+r.luong,0)/1e6).toFixed(2));
+  const COLS=Object.values(DCOL), BGLS=Object.values(DBGL);
+  csKill('barDoiCong');
+  csCharts.barDoiCong=new Chart(document.getElementById('cs-barDoiCong'),{type:'bar',
+    data:{labels:['Đội A','Đội B','Đội C','Đội D'],datasets:[
+      {label:'Số công TH',data:cong,backgroundColor:BGLS,borderRadius:5,yAxisID:'y'},
+      {label:'Lương (M Riel)',data:luong,backgroundColor:COLS.map(c=>c+'44'),borderColor:COLS,borderWidth:1.5,borderRadius:5,yAxisID:'y1'},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:9},boxWidth:9}},tooltip:{callbacks:{label:c=>c.datasetIndex===0?`${c.raw} công`:`${c.raw} M Riel`}}},
+      scales:{x:{grid:{display:false},ticks:{color:var2ink3}},
+        y:{type:'linear',position:'left',ticks:{callback:v=>v+' c',color:var2ink3},title:{display:true,text:'Công',color:var2ink3,font:{size:9}}},
+        y1:{type:'linear',position:'right',ticks:{callback:v=>v+'tr',color:var2ink3},grid:{drawOnChartArea:false},title:{display:true,text:'Tr đ',color:var2ink3,font:{size:9}}},
+      }}
+  });
+  const maxC=Math.max(...cong)||1,maxL=Math.max(...luong)||1;
+  const cnCnt=dois.map(d=>[...new Set(data.filter(r=>r.doi===d).map(r=>r.ten))].length);
+  const dvCnt=dois.map(d=>[...new Set(data.filter(r=>r.doi===d).map(r=>r.ma))].length);
+  const mxCN=Math.max(...cnCnt)||1, mxDV=Math.max(...dvCnt)||1;
+  csKill('radar');
+  csCharts.radar=new Chart(document.getElementById('cs-radar'),{type:'radar',
+    data:{labels:['Tổng công','Tổng lương','Số CN','Đầu việc'],
+      datasets:dois.map((d,i)=>({label:'Đội '+d,data:[cong[i]/maxC*100,luong[i]/maxL*100,cnCnt[i]/mxCN*100,dvCnt[i]/mxDV*100].map(v=>+v.toFixed(1)),backgroundColor:COLS[i]+'25',borderColor:COLS[i],borderWidth:2,pointRadius:3,pointBackgroundColor:COLS[i]}))},
+    options:{responsive:true,maintainAspectRatio:true,aspectRatio:1,
+      scales:{r:{min:0,max:100,ticks:{stepSize:25,font:{size:7},backdropColor:'transparent',color:var2ink3},pointLabels:{font:{size:9},color:var2ink3},grid:{color:'#21262d'},angleLines:{color:'#30363d'}}},
+      plugins:{legend:{display:false}}}
+  });
+}
+function csRenderTable(data){
+  const sorted=[...data].sort((a,b)=>b.luong-a.luong);
+  let tc=0,tl=0;
+  document.getElementById('cs-tbody').innerHTML=sorted.map((r,i)=>{tc+=r.cong;tl+=r.luong;
+    const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
+    return`<tr>
+      <td style="text-align:center;font-weight:700;font-size:11px;color:${i<3?'var(--g2)':'var(--ink4)'}">${medal}</td>
+      <td class="c-tb">${r.ten}</td>
+      <td style="text-align:center;font-weight:700;color:${DCOL[r.doi]}">Đội ${r.doi}</td>
+      <td style="font-size:10px;color:var(--ink3);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.nd}</td>
+      <td style="text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px">Lô ${r.lo}</td>
+      <td class="c-tr">${fN(r.dt_g)}</td><td class="c-tr">${fN(r.dt_nt)}</td><td class="c-tr">${fN(r.dt_pt)}</td>
+      <td class="c-tr" style="color:var(--ink3)">${r.dm} c/ha</td>
+      <td class="c-tr" style="font-weight:600">${fN(r.cong,2)}</td>
+      <td class="c-tr"><span class="bdg ${r.pct>=0.99?'bok':'bwn'}">${(r.pct*100).toFixed(0)}%</span></td>
+      <td class="c-tr c-tm">${fV(r.luong)}</td>
+      <td>${hsTag(r.pct)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('cs-ft-cong').textContent=fN(tc,2)+' công';
+  document.getElementById('cs-ft-luong').textContent=fV(tl)+' đ';
+  document.getElementById('cs-tbl-count').textContent=sorted.length+' bản ghi';
+  document.getElementById('cs-ft-sub').textContent=`${sorted.length} CN · Tổng: ${(tl/1e6).toFixed(2)} M Riel`;
+}
+function csInit(){
+  const hms=[...new Set(CNRAW.map(r=>r.nd))];
+  hms.forEach(h=>{document.getElementById('f-hm').innerHTML+=`<option value="${h}">${h}</option>`;});
+  const los=[...new Set(CNRAW.map(r=>r.lo))].sort();
+  los.forEach(l=>{document.getElementById('f-lo').innerHTML+=`<option value="${l}">Lô ${l}</option>`;});
+  csApplyFilter();
+}
+
+// ═══════════════════════════════════════════════════════════
+// ██  PAGE 1 — OVERVIEW RENDER (new)
+// ═══════════════════════════════════════════════════════════
+let ovCharts={};
+function ovKill(id){if(ovCharts[id]){ovCharts[id].destroy();delete ovCharts[id]}}
+
+function ovGetKTFiltered(){
+  const hang=document.getElementById('ov-selHang').value;
+  return KT_RAW.filter(d=>{
+    if(hang!=='all'&&d.hang!==hang)return false;
+    return true;
+  });
+}
+function ovGetCSFiltered(){
+  const doi=document.getElementById('ov-selDoi').value;
+  return CNRAW.filter(r=>doi==='all'||r.doi===doi);
+}
+function ovGetCSKHFiltered(){
+  const doi=document.getElementById('ov-selDoi').value;
+  return KH_CS.filter(r=>doi==='all'||r.doi===doi);
+}
+
+function ovRender(){
+  const ktData=ovGetKTFiltered();
+  const csData=ovGetCSFiltered();
+  const csKHData=ovGetCSKHFiltered();
+
+  // badge
+  document.getElementById('ov-badge').textContent=ktData.length+' CN KT · '+[...new Set(csData.map(r=>r.ten))].length+' CN CSVC';
+
+  // KPIs
+  const totKT=ktData.reduce((s,d)=>s+d.tong,0);
+  const csTH=csData.reduce((s,r)=>s+r.luong,0)/1e6;
+  const csKHtot=csKHData.reduce((s,r)=>s+r.tt,0)/1e6;
+  const csRemain=Math.max(0,csKHtot-csTH);
+  const csPct=csKHtot>0?csTH/csKHtot:0;
+  const avgConNhan=ktData.length?ktData.reduce((s,d)=>s+d.connhan,0)/ktData.length:0;
+  const avgTong=ktData.length?totKT/ktData.length:0;
+  document.getElementById('ov-kt-cn').textContent=ktData.length;
+  document.getElementById('ov-kt-paid').textContent=fmtK(totKT);
+  document.getElementById('ov-cs-cn').textContent=[...new Set(csData.map(r=>r.ten))].length;
+  document.getElementById('ov-cs-paid').textContent=csTH.toFixed(1);
+  document.getElementById('ov-cs-pct-sub').textContent='M Riel · '+(csPct*100).toFixed(0)+'% quỹ KH';
+  document.getElementById('ov-cs-remain').textContent=csRemain.toFixed(2);
+  document.getElementById('ov-hs-avg').textContent=fmtK(avgConNhan);
+
+  // A. Quỹ lương progress bars
+  document.getElementById('ov-quy-bars').innerHTML=`
+    <div class="ql-row">
+      <div class="ql-lbl">CN Khai Thác (Riel)</div>
+      <div class="ql-track">
+        <div class="ql-fill" style="width:100%;background:linear-gradient(90deg,rgba(29,78,216,.85),rgba(59,130,246,.8))">
+          Đã chi: ${fmtK(totKT)} Riel
+        </div>
+      </div>
+      <div class="ql-meta">${ktData.length} CN · T12/2025</div>
+    </div>
+    <div class="ql-row">
+      <div class="ql-lbl">CSVC — Đã chi</div>
+      <div class="ql-track">
+        <div class="ql-fill" style="width:${Math.min(csPct*100,100).toFixed(1)}%;background:linear-gradient(90deg,rgba(15,61,46,.85),rgba(45,138,98,.8));min-width:60px">
+          ${csTH.toFixed(1)} M Riel (${(csPct*100).toFixed(0)}%)
+        </div>
+      </div>
+      <div class="ql-meta">KH: ${csKHtot.toFixed(1)} M Riel</div>
+    </div>
+    <div class="ql-row">
+      <div class="ql-lbl">CSVC — Còn lại</div>
+      <div class="ql-track">
+        <div class="ql-fill" style="width:${Math.min((csRemain/csKHtot)*100,100).toFixed(1)}%;background:linear-gradient(90deg,rgba(185,28,28,.7),rgba(248,113,113,.7));min-width:40px">
+          ${csRemain.toFixed(2)} M Riel
+        </div>
+      </div>
+      <div class="ql-meta">chưa giải ngân</div>
+    </div>`;
+
+  // B. Hai biểu đồ: KT theo Hạng kỹ thuật + CSVC KH vs TH theo Đội
+  const hangList=['A','B','C','D'];
+  const ktTongVals=hangList.map(h=>+(ktData.filter(d=>d.hang===h).reduce((s,d)=>s+d.tong,0)/1e6).toFixed(2));
+  const KT_HANG_COLS=['rgba(63,185,80,.8)','rgba(88,166,255,.8)','rgba(210,153,34,.8)','rgba(248,81,73,.8)'];
+  ovKill('ovKT');
+  ovCharts['ovKT']=new Chart(document.getElementById('ov-chart-kt'),{type:'bar',
+    data:{labels:['Hạng A','Hạng B','Hạng C','Hạng D'],datasets:[
+      {label:'Tổng lương (M Riel)',data:ktTongVals,backgroundColor:KT_HANG_COLS,borderRadius:6,borderWidth:0}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw} M Riel`}}},
+      scales:{
+        x:{ticks:{color:var2ink3,font:{size:10}},grid:{color:'#21262d'}},
+        y:{ticks:{color:var2ink3,font:{size:9},callback:v=>v+' M'},grid:{color:'#21262d'}}
+      }
+    }
+  });
+
+  const dois=['A','B','C','D'];
+  const csKHvals=dois.map(d=>+(csKHData.filter(r=>r.doi===d).reduce((s,r)=>s+r.tt,0)/1e6).toFixed(2));
+  const csTHvals=dois.map(d=>+(csData.filter(r=>r.doi===d).reduce((s,r)=>s+r.luong,0)/1e6).toFixed(2));
+  const KT_DOI_DARK={A:'rgba(88,166,255,.25)',B:'rgba(63,185,80,.25)',C:'rgba(210,153,34,.25)',D:'rgba(188,140,255,.25)'};
+  const KT_DOI_BORDER={A:'rgba(88,166,255,1)',B:'rgba(63,185,80,1)',C:'rgba(210,153,34,1)',D:'rgba(188,140,255,1)'};
+  const KT_DOI_FILL={A:'rgba(88,166,255,.75)',B:'rgba(63,185,80,.75)',C:'rgba(210,153,34,.75)',D:'rgba(188,140,255,.75)'};
+  ovKill('ovCSVC');
+  ovCharts['ovCSVC']=new Chart(document.getElementById('ov-chart-csvc'),{type:'bar',
+    data:{labels:['Đội A','Đội B','Đội C','Đội D'],datasets:[
+      {label:'KH (M Riel)',data:csKHvals,backgroundColor:dois.map(d=>KT_DOI_DARK[d]),borderColor:dois.map(d=>KT_DOI_BORDER[d]),borderWidth:1.5,borderRadius:5},
+      {label:'TH (M Riel)',data:csTHvals,backgroundColor:dois.map(d=>KT_DOI_FILL[d]),borderRadius:5,borderWidth:0},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:var2ink3,font:{size:9},boxWidth:10}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw} M Riel`}}},
+      scales:{
+        x:{ticks:{color:var2ink3,font:{size:10}},grid:{color:'#21262d'}},
+        y:{ticks:{color:var2ink3,font:{size:9},callback:v=>v+'M'},grid:{color:'#21262d'}}
+      }
+    }
+  });
+
+  // C. Top 10 công nhân khai thác theo tổng lương + Phân bố hạng kỹ thuật
+  const top10=[...ktData].sort((a,b)=>b.tong-a.tong).slice(0,10);
+  const maxTop=top10.length?top10[0].tong:1;
+  const hangcol2={A:'#0F3D2E',B:'#2D8A62',C:'#D4870A',D:'#B91C1C'};
+  document.getElementById('ov-kv-bars').innerHTML=top10.map(d=>`
+    <div class="cmp-row">
+      <div class="cmp-lbl">${sn(d.name)}<br><span style="font-size:8px;color:var(--ink4)">Hạng ${d.hang}</span></div>
+      <div class="cmp-bar-wrap">
+        <div class="cmp-bar" style="width:${d.tong/maxTop*100}%;background:${hangcol2[d.hang]};color:#fff">${fmtK(d.tong)}</div>
+      </div>
+      <div class="cmp-val" style="color:${hangcol2[d.hang]}">${fmtK(d.tong)} Riel</div>
+    </div>`).join('');
+
+  // Rank dist (light)
+  const RKC_L={'A':'#0F3D2E','B':'#1D4ED8','C':'#D4870A','D':'#B91C1C'};
+  const ro=['A','B','C','D'];
+  const rc={};ro.forEach(r=>rc[r]=0);
+  ktData.forEach(d=>{if(rc[d.hang]!==undefined)rc[d.hang]++});
+  const mx=Math.max(...Object.values(rc),1);
+  document.getElementById('ov-rank-bars').innerHTML=ro.map(r=>`
+    <div class="rrow-l">
+      <div class="rlbl-l" style="color:${RKC_L[r]}">${r}</div>
+      <div class="rtrack-l"><div class="rbar-l" style="width:${rc[r]/mx*100}%;background:${RKC_L[r]}bf;color:#fff">${rc[r]>0?rc[r]+' CN':''}</div></div>
+      <div class="rcnt-l" style="color:${RKC_L[r]}">${rc[r]}</div>
+    </div>`).join('');
+}
+const var2ink3='#8b949e';
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+Chart.defaults.color='#8b949e';
+Chart.defaults.font.family="'Inter',sans-serif";
+// Render trang 1 ngay khi load
+ovRender(); ovRendered=true;
+</script></body></html>
